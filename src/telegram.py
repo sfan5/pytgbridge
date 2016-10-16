@@ -63,11 +63,14 @@ class TelegramMediaContainer():
 			c = orig.sticker
 			self.emoji = c.emoji
 			self.dimensions = (c.width, c.height)
+		elif self.type == "video":
+			c = orig.video
+			self.duration = c.duration
+			self.dimensions = (c.width, c.height)
 		elif self.type == "voice":
 			c = orig.voice
 			self.duration = c.duration
 		else:
-			# TODO: video
 			raise NotImplementedException("content type not supported")
 
 		self.file_id = c.file_id

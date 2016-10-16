@@ -218,7 +218,7 @@ class Bridge():
 
 	def tg_media(self, l, event, media):
 		logging.info("[TG] media (%s)", media.type)
-		mediadesc = "(???)" # TODO: video
+		mediadesc = "(???)"
 		if media.type == "audio":
 			if media.desc is None:
 				mediadesc = "(Audio, %s)" % format_audio_duration(media.duration)
@@ -236,6 +236,8 @@ class Bridge():
 				mediadesc = "(Sticker, %dx%d)" % media.dimensions
 			else:
 				mediadesc = "(Sticker)"
+		elif media.type == "video":
+			mediadesc = "(Video, %s)" % format_audio_duration(media.duration)
 		elif media.type == "voice":
 			mediadesc = "(Voice, %s)" % format_audio_duration(media.duration)
 		#
