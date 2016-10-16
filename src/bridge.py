@@ -109,6 +109,7 @@ class Bridge():
 		self._tg_event_handler("text", self.tg_text)
 		self._tg_event_handler("media", self.tg_media)
 		self._tg_event_handler("location", self.tg_location)
+		self._tg_event_handler("contact", self.tg_contact)
 		self._tg_event_handler("user_joined", self.tg_user_joined)
 		self._tg_event_handler("user_left", self.tg_user_left)
 		self._tg_event_handler("ctitle_changed", self.tg_ctitle_changed)
@@ -216,7 +217,6 @@ class Bridge():
 		self.irc.privmsg(l.irc, self._tg_format_msg(event))
 
 	def tg_media(self, l, event, media):
-		dump(event, "event")
 		logging.info("[TG] media (%s)", media.type)
 		mediadesc = "(???)" # TODO: video
 		if media.type == "audio":
@@ -249,6 +249,15 @@ class Bridge():
 			self._tg_format_msg_prefix(event),
 			event.location.longitude,
 			event.location.latitude,
+		))
+
+	def tg_contact(self, l, event):
+		logging.info("[TG] contact")
+		self.irc.privmsg(l.irc, "%s (Contact, Name: %s%s, Phone: %s)" % (
+			self._tg_format_msg_prefix(event),
+			event.contact.first_name,
+			(" " + event.contact.last_name) if event.contact.last_name is not None else "",
+			event.contact.phone_number,
 		))
 
 	def tg_user_joined(self, l, event):
