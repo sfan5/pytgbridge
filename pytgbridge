@@ -3,6 +3,8 @@ import logging
 import json
 import threading
 import os
+import sys
+import getopt
 
 from src.telegram import TelegramClient
 from src.irc import IRCClient
@@ -15,11 +17,29 @@ def start_new_thread(func, join=False, args=(), kwargs={}):
 	if join:
 		t.join()
 
-if __name__ == "__main__":
-	with open("./config.json", "r") as f:
-		config = json.load(f)
+def readopt(name):
+	global opts
+	for e in opts:
+		if e[0] == name:
+			return e[1]
+	return None
 
-	logging.basicConfig(format="[%(asctime)s] %(message)s", datefmt="%Y-%m-%d %H:%M:%S", level=logging.INFO)
+def usage():
+	print("Usage: %s [-q] [-c file.json] [-D]" % sys.argv[0])
+	print("Options:")
+	print("  -q    Be quieter, raise log level to WARNING")
+	print("  -c    Set location of config file (default: ./config.json)")
+	print("  -D    Fork into background")
+
+def main(configpath, loglevel=logging.INFO):
+	with open(configpath, "r") as f:
+		try:
+			config = json.load(f)
+		except json.JSONDecodeError:
+			logging.error("Couldn't parse configuration file")
+			exit(1)
+
+	logging.basicConfig(format="[%(asctime)s] %(message)s", datefmt="%Y-%m-%d %H:%M:%S", level=loglevel)
 	logging.info("Starting up...")
 
 	try:
@@ -38,3 +58,23 @@ if __name__ == "__main__":
 	except KeyboardInterrupt:
 		logging.info("Interrupted, exiting")
 		os._exit(1)
+
+if __name__ == "__main__":
+	try:
+		opts, args = getopt.getopt(sys.argv[1:], "hqc:D")
+	except getopt.GetoptError as e:
+		print(str(e))
+		exit(1)
+	# Process command line args
+	if readopt("-h") is not None:
+		usage()
+		exit(0)
+	loglevel = logging.INFO if readopt("-q") is None else logging.WARNING
+	configpath = "./config.json"
+	if readopt("-c") is not None:
+		configpath = readopt("-c")
+	# Fork into background
+	if readopt("-D") is not None and os.fork():
+		sys.exit()
+	# Run the actual program
+	main(configpath, loglevel)
