@@ -216,6 +216,7 @@ class Bridge():
 		self.irc.privmsg(l.irc, self._tg_format_msg(event))
 
 	def tg_media(self, l, event, media):
+		dump(event, "event")
 		logging.info("[TG] media (%s)", media.type)
 		mediadesc = "(???)" # TODO: video
 		if media.type == "audio":
@@ -239,7 +240,8 @@ class Bridge():
 			mediadesc = "(Voice, %s)" % format_audio_duration(media.duration)
 		#
 		url = self.web.download_and_serve(self.tg.get_file_url(media.file_id))
-		self.irc.privmsg(l.irc, self._tg_format_msg_prefix(event) + " " + mediadesc + " " + url)
+		post = (" " + event.caption) if event.caption is not None else ""
+		self.irc.privmsg(l.irc, self._tg_format_msg_prefix(event) + " " + mediadesc + " " + url + post)
 
 	def tg_location(self, l, event):
 		logging.info("[TG] location")
