@@ -114,7 +114,7 @@ class Bridge():
 		self._tg_event_handler("ctitle_changed", self.tg_ctitle_changed)
 		self._tg_event_handler("cphoto_changed", self.tg_cphoto_changed)
 		self._tg_event_handler("cphoto_deleted", self.tg_cphoto_deleted)
-		#self._tg_event_handler("cpinned_changed", self.tg_cpinned_changed)
+		self._tg_event_handler("cpinned_changed", self.tg_cpinned_changed)
 
 	def _tg_event_handler(self, event, func):
 		# So we don't have to repeat this code in every handler
@@ -139,7 +139,7 @@ class Bridge():
 				if l.irc == irc.channel:
 					return l
 			return None
-		raise NotImplementedException("what?")
+		raise NotImplementedException()
 
 	def _tg_format_user(self, user):
 		if user.username is not None:
@@ -166,7 +166,9 @@ class Bridge():
 			pre = "@%s, " % self.nc.colorize(self._tg_format_user(event.reply_to_message.from_user))
 		else:
 			pre = ""
-		# TODO: format non-text messages here too
+		# TODO: support non-text messages here (for pinned msgs)
+		if event.content_type != "text":
+			return self._tg_format_msg_prefix(event) + " " + pre + "(Media message)"
 		return self._tg_format_msg_prefix(event) + " " + pre + event.text
 
 
@@ -288,11 +290,10 @@ class Bridge():
 			self.nc.colorize(self._tg_format_user(event.from_user)),
 		))
 
-	# Only tg-cli gets notifications about changes of pinned messages
-	#def tg_cpinned_changed(self, l, event):
-	#	logging.info("[TG] pinned message changed")
-	#	self.irc.privmsg(l.irc, "%s pinned message: %s" % (
-	#		self.nc.colorize(self._tg_format_user(event.from_user)),
-	#		self._tg_format_msg(event.pinned_message),
-	#	))
+	def tg_cpinned_changed(self, l, event):
+		logging.info("[TG] pinned message changed")
+		self.irc.privmsg(l.irc, "%s pinned message: %s" % (
+			self.nc.colorize(self._tg_format_user(event.from_user)),
+			self._tg_format_msg(event.pinned_message),
+		))
 

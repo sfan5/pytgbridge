@@ -139,8 +139,8 @@ class TelegramClient():
 			self._invoke_event_handler("cphoto_changed", (message, media))
 		elif message.delete_chat_photo:
 			self._invoke_event_handler("cphoto_deleted", (message, ))
-		#elif message.pinned_message is not None:
-		#	self._invoke_event_handler("pinned_changed", (message, ))
+		elif message.pinned_message is not None:
+			self._invoke_event_handler("cpinned_changed", (message, ))
 
 
 	def send_message(self, chat_id, text, **kwargs):
