@@ -42,6 +42,10 @@ class IRCBot(irc.bot.SingleServerIRCBot):
 	def on_action(self, conn, event):
 		self._invoke_event_handler("action", (IRCEvent(event), ))
 
+	def on_error(self, conn, event):
+		logging.warning("IRC connection error, reconnecting")
+		conn.reconnect()
+
 class IRCClient():
 	def __init__(self, config):
 		args = {"ipv6": True}
