@@ -48,7 +48,6 @@ class IRCClient():
 		if config["ssl"]:
 			args["wrapper"] = __import__("ssl").wrap_socket
 		kwargs = {"connect_factory": irc.connection.Factory(**args)}
-
 		args = [[(config["server"], config["port"])], config["nick"], "pytgbridge (IRC)"]
 		ns_password = None if "nickpassword" not in config.keys() else config["nickpassword"]
 		self.bot = IRCBot(args, kwargs, ns_password=ns_password)

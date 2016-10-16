@@ -111,10 +111,10 @@ class Bridge():
 		self._tg_event_handler("location", self.tg_location)
 		self._tg_event_handler("user_joined", self.tg_user_joined)
 		self._tg_event_handler("user_left", self.tg_user_left)
-		self._tg_event_handler("ctitle_changed", self.tg_ctitle_changed) # TODO: these don't work
+		self._tg_event_handler("ctitle_changed", self.tg_ctitle_changed)
 		self._tg_event_handler("cphoto_changed", self.tg_cphoto_changed)
 		self._tg_event_handler("cphoto_deleted", self.tg_cphoto_deleted)
-		self._tg_event_handler("cpinned_changed", self.tg_cpinned_changed)
+		#self._tg_event_handler("cpinned_changed", self.tg_cpinned_changed)
 
 	def _tg_event_handler(self, event, func):
 		# So we don't have to repeat this code in every handler
@@ -277,18 +277,22 @@ class Bridge():
 	def tg_cphoto_changed(self, l, event, media):
 		logging.info("[TG] chat photo changed")
 		url = self.web.download_and_serve(self.tg.get_file_url(media.file_id))
-		self.irc.privmsg(l.irc, "%s set a new chat photo (%dx%d) %s" % (
-			self._tg_format_msg_prefix(event), media.dimensions, url
+		self.irc.privmsg(l.irc, "%s set a new chat photo (%dx%d): %s" % (
+			self.nc.colorize(self._tg_format_user(event.from_user)),
+			media.dimensions[0], media.dimensions[1], url
 		))
 
 	def tg_cphoto_deleted(self, l, event):
 		logging.info("[TG] chat photo deleted")
-		self.irc.privmsg(l,irc, self._tg_format_msg_prefix(event) + " deleted the chat photo")
-
-	def tg_cpinned_changed(self, l, event):
-		logging.info("[TG] pinned message changed")
-		self.irc.privmsg(l.irc, "%s pinned message: %s" % (
+		self.irc.privmsg(l.irc, "%s deleted the chat photo" % (
 			self.nc.colorize(self._tg_format_user(event.from_user)),
-			self._tg_format_msg(event.pinned_message),
 		))
+
+	# Only tg-cli gets notifications about changes of pinned messages
+	#def tg_cpinned_changed(self, l, event):
+	#	logging.info("[TG] pinned message changed")
+	#	self.irc.privmsg(l.irc, "%s pinned message: %s" % (
+	#		self.nc.colorize(self._tg_format_user(event.from_user)),
+	#		self._tg_format_msg(event.pinned_message),
+	#	))
 
