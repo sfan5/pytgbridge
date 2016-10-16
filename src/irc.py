@@ -9,10 +9,11 @@ class IRCEvent():
 		self.message = orig.arguments[0]
 
 class IRCBot(irc.bot.SingleServerIRCBot):
-	def __init__(self, args, kwargs={}):
+	def __init__(self, args, kwargs={}, ns_password=None):
 		irc.bot.SingleServerIRCBot.__init__(self, *args, **kwargs)
 		self.event_handlers = {}
-	
+		self.ns_password = ns_password
+
 	def _invoke_event_handler(self, name, args=(), kwargs={}):
 		if name not in self.event_handlers.keys():
 			logging.warning("Unhandeled '%s' event", name)
@@ -25,6 +26,8 @@ class IRCBot(irc.bot.SingleServerIRCBot):
 
 	def on_welcome(self, conn, event):
 		logging.info("IRC connection established")
+		if self.ns_password is not None:
+			self.connection.privmsg("NickServ", "IDENTIFY " + self.ns_password)
 		self._invoke_event_handler("connected")
 
 	def on_nicknameinuse(self, conn, event):
@@ -45,8 +48,10 @@ class IRCClient():
 		if config["ssl"]:
 			args["wrapper"] = __import__("ssl").wrap_socket
 		kwargs = {"connect_factory": irc.connection.Factory(**args)}
+
 		args = [[(config["server"], config["port"])], config["nick"], "pytgbridge (IRC)"]
-		self.bot = IRCBot(args, kwargs)
+		ns_password = None if "nickpassword" not in config.keys() else config["nickpassword"]
+		self.bot = IRCBot(args, kwargs, ns_password=ns_password)
 	def run(self):
 		self.bot.start()
 	def event_handler(self, name, func):

@@ -6,7 +6,8 @@
 		"server": "irc.freenode.net",
 		"port": 6697,
 		"ssl": true,
-		"nick": "tg_bridge"
+		"nick": "tg_bridge",
+		"nickpassword": "s3cret" // NickServ password, omit to disable logging in
 	},
 	"bridge": {
 		"options": {
