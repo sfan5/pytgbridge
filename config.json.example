@@ -12,20 +12,21 @@
 	"bridge": {
 		"options": {
 			"telegram_bold_nicks": true, // make nicks bold in telegram
-			"irc_nick_colors": [2, 3, 4, 7, 9, 10, 11, 12], // colorize nicks in IRC, optional, use [] to disable
+			"irc_nick_colors": [2, 4, 12], // colorize nicks in IRC, omit to use default color set, use [] to disable
 			"forward_sticker_dimensions": false, // show (Sticker, 512x512) instead of (Sticker)
 			"forward_document_mime": true, // show (Document, video/mp4) instead of (Document)
-			"forward_text_formatting": false // Forward bold and italics formatting from IRC to Telegram
+			"forward_text_formatting": false // Forward bold and italics formatting (currently only IRC->Telegram)
 		},
 		"links": [
-			// get the telegram id by adding the bot to a channel and looking at the log
-			{"telegram": <TELEGRAM ID HERE>, "irc": "#irc_channel"}
+			// find out the telegram id by adding the bot to a channel and looking at the log
+			{"telegram": -123455465, "irc": "#irc_channel"},
+			{"telegram": 323443454, "irc": "#irc_channel2"}
 		]
 	},
 	"web_backend": {
 		"type": "external", // stub or external (see below)
 		"webpath": "/var/www/tg", // where to write files
-		"baseurl": "http://vps.yourself.me/tg", // external URL of that folder
+		"baseurl": "http://yourname.me/tg", // external URL of that folder
 		"use_subdirs": true // whether to spread files to 26 subdirs
 	}
 }
