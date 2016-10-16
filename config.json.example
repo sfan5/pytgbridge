@@ -1,0 +1,30 @@
+{
+	"telegram": {
+		"token": "123456:BOT-TOKEN-HERE"
+	},
+	"irc": {
+		"server": "irc.freenode.net",
+		"port": 6697,
+		"ssl": true,
+		"nick": "tg_bridge"
+	},
+	"bridge": {
+		"options": {
+			"telegram_bold_nicks": true,
+			"irc_nick_colors": [2, 3, 4, 7, 9, 10, 11, 12], // optional
+			"forward_sticker_dimensions": false,
+			"forward_document_mime": true,
+			"forward_text_formatting": false
+		},
+		"links": [
+			// get the telegram id by adding the bot to a channel and looking at the log
+			{"telegram": <TELEGRAM ID HERE>, "irc": "#irc_channel"}
+		]
+	},
+	"web_backend": {
+		"type": "external",
+		"webpath": "/var/www/tg",
+		"baseurl": "http://vps.yourself.me/tg",
+		"use_subdirs": true // whether to spread files to 26 subdirs
+	}
+}

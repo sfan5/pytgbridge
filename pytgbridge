@@ -1,0 +1,40 @@
+#!/usr/bin/env python3
+import logging
+import json
+import threading
+import os
+
+from src.telegram import TelegramClient
+from src.irc import IRCClient
+from src.bridge import Bridge
+from src.web_backend import WebBackend
+
+def start_new_thread(func, join=False, args=(), kwargs={}):
+	t = threading.Thread(target=func, args=args, kwargs=kwargs)
+	t.start()
+	if join:
+		t.join()
+
+if __name__ == "__main__":
+	with open("./config.json", "r") as f:
+		config = json.load(f)
+
+	logging.basicConfig(format="[%(asctime)s] %(message)s", datefmt="%Y-%m-%d %H:%M:%S", level=logging.INFO)
+	logging.info("Starting up...")
+
+	try:
+		tg = TelegramClient(config["telegram"])
+		irc = IRCClient(config["irc"])
+		wb = WebBackend(config["web_backend"])
+		b = Bridge(tg, irc, wb, config["bridge"])
+	except (KeyError, TypeError):
+		logging.error("Configuration incomplete")
+		exit(1)
+
+	start_new_thread(tg.run)
+	
+	try:
+		start_new_thread(irc.run, join=True)
+	except KeyboardInterrupt:
+		logging.info("Interrupted, exiting")
+		os._exit(1)
