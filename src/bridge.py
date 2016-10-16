@@ -111,7 +111,7 @@ class Bridge():
 		self._tg_event_handler("location", self.tg_location)
 		self._tg_event_handler("user_joined", self.tg_user_joined)
 		self._tg_event_handler("user_left", self.tg_user_left)
-		self._tg_event_handler("ctitle_changed", self.tg_ctitle_changed)
+		self._tg_event_handler("ctitle_changed", self.tg_ctitle_changed) # TODO: these don't work
 		self._tg_event_handler("cphoto_changed", self.tg_cphoto_changed)
 		self._tg_event_handler("cpinned_changed", self.tg_cpinned_changed)
 
@@ -165,7 +165,7 @@ class Bridge():
 			pre = "@%s, " % self.nc.colorize(self._tg_format_user(event.reply_to_message.from_user))
 		else:
 			pre = ""
-		# TODO: format non-text messages here
+		# TODO: format non-text messages here too
 		return self._tg_format_msg_prefix(event) + " " + pre + event.text
 
 
