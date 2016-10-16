@@ -8,7 +8,7 @@ mapped_content_type = {
 	"new_chat_member": "user_joined",
 	"left_chat_member": "user_left",
 	"new_chat_title": "ctitle_changed",
-	"delete_chat_photo": "",
+	"delete_chat_photo": "cphoto_deleted",
 	"group_chat_created": "", # can't occurr because we're a bot
 	"supergroup_chat_created": "", # can't occurr because we're a bot
 	"channel_chat_created": "", # can't occurr because we're a bot
@@ -87,7 +87,7 @@ class TelegramClient():
 
 		self._telebot_event_handler(self.cmd_start, commands=["start"])
 		self._telebot_event_handler(self.cmd_help, commands=["help"])
-		self._telebot_event_handler(self.cmd_me, commands=["me"]) # not portable
+		self._telebot_event_handler(self.cmd_me, commands=["me"]) # FIXME: not portable
 		for k, v in mapped_content_type.items():
 			if v == "": continue
 			self._telebot_event_handler_passthrough(v, content_types=[k])

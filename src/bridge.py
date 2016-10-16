@@ -61,7 +61,7 @@ class TextFormattingConverter():
 				bold, italics = False, False
 			elif c == "\x1d":
 				italics = not italics
-				ret += "_"if self.enabled else ""
+				ret += "_" if self.enabled else ""
 			elif c == "\x1f": # underline (ignored)
 				pass
 			else:
@@ -113,6 +113,7 @@ class Bridge():
 		self._tg_event_handler("user_left", self.tg_user_left)
 		self._tg_event_handler("ctitle_changed", self.tg_ctitle_changed) # TODO: these don't work
 		self._tg_event_handler("cphoto_changed", self.tg_cphoto_changed)
+		self._tg_event_handler("cphoto_deleted", self.tg_cphoto_deleted)
 		self._tg_event_handler("cpinned_changed", self.tg_cpinned_changed)
 
 	def _tg_event_handler(self, event, func):
@@ -275,12 +276,14 @@ class Bridge():
 
 	def tg_cphoto_changed(self, l, event, media):
 		logging.info("[TG] chat photo changed")
-		pre = self._tg_format_msg_prefix(event)
-		if event.delete_chat_photo:
-			self.irc.privmsg(l,irc, pre + " deleted the chat photo")
-			return
 		url = self.web.download_and_serve(self.tg.get_file_url(media.file_id))
-		self.irc.privmsg(l.irc, "%s set a new chat photo (%dx%d) %s" % (pre, media.dimensions, url))
+		self.irc.privmsg(l.irc, "%s set a new chat photo (%dx%d) %s" % (
+			self._tg_format_msg_prefix(event), media.dimensions, url
+		))
+
+	def tg_cphoto_deleted(self, l, event):
+		logging.info("[TG] chat photo deleted")
+		self.irc.privmsg(l,irc, self._tg_format_msg_prefix(event) + " deleted the chat photo")
 
 	def tg_cpinned_changed(self, l, event):
 		logging.info("[TG] pinned message changed")

@@ -42,7 +42,7 @@ class WebBackend():
 		if not self.subdirs:
 			return filename
 		h = WebBackend._hash(filename)
-		h = chr(97 + h % 26)
+		h = chr(97 + h % 26) # A-Z
 		try:
 			os.mkdir(self.webpath + "/" + h)
 		except FileExistsError:
