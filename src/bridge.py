@@ -169,7 +169,7 @@ class Bridge():
 		# TODO: support non-text messages here (for pinned msgs)
 		if event.content_type != "text":
 			return self._tg_format_msg_prefix(event) + " " + pre + "(Media message)"
-		return self._tg_format_msg_prefix(event) + " " + pre + event.text
+		return self._tg_format_msg_prefix(event) + " " + pre + event.text.replace("\n", " … ")
 
 
 	def irc_connected(self):
