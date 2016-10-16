@@ -63,5 +63,8 @@ class IRCClient():
 	def join(self, channel):
 		self.bot.connection.join(channel)
 	def privmsg(self, target, message):
-		self.bot.connection.privmsg(target, message)
+		try:
+			self.bot.connection.privmsg(target, message)
+		except irc.client.ServerNotConnectedError:
+			logging.warning("Dropping message because IRC not connected yet")
 
