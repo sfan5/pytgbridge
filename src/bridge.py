@@ -206,9 +206,9 @@ class Bridge():
 		self.tg.send_reply_message(event, "pytgbridge (Telegram)")
 
 	def tg_me(self, l, event):
-		if len(event.text) < 4:
+		if len(event.text.split(" ")) < 2:
 			return
-		atext = event.text[4:]
+		atext = " ".join(event.text.split(" ")[1:])
 		logging.info("[TG] /me action: %s", atext)
 		self.irc.privmsg(l.irc, self._tg_format_msg_prefix(event, True) + " " + atext)
 
