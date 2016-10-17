@@ -6,6 +6,7 @@
 		"server": "irc.freenode.net",
 		"port": 6697,
 		"ssl": true,
+		"ipv6": true, // Use IPv6 if possible, optional (defaults to true)
 		"nick": "tg_bridge",
 		"nickpassword": "s3cret" // NickServ password, omit to disable logging in
 	},

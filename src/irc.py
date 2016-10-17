@@ -48,7 +48,11 @@ class IRCBot(irc.bot.SingleServerIRCBot):
 
 class IRCClient():
 	def __init__(self, config):
-		args = {"ipv6": True}
+		args = {}
+		if "ipv6" in config.keys():
+			args["ipv6"] = config["ipv6"]
+		else:
+			args["ipv6"] = True
 		if config["ssl"]:
 			args["wrapper"] = __import__("ssl").wrap_socket
 		kwargs = {"connect_factory": irc.connection.Factory(**args)}
