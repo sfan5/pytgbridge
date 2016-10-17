@@ -96,7 +96,11 @@ LinkTuple = namedtuple("LinkTuple", ["telegram", "irc"])
 config_names = [
 	"telegram_bold_nicks",
 	"irc_nick_colors",
-	"forward_sticker_dimensions", "forward_document_mime", "forward_text_formatting"
+
+	"forward_sticker_dimensions",
+	"forward_document_mime",
+	"forward_audio_description",
+	"forward_text_formatting",
 ]
 
 class Bridge():
@@ -233,10 +237,10 @@ class Bridge():
 		logging.info("[TG] media (%s)", media.type)
 		mediadesc = "(???)"
 		if media.type == "audio":
-			if media.desc is None:
-				mediadesc = "(Audio, %s)" % format_audio_duration(media.duration)
-			else:
+			if media.desc is not None and self.conf.forward_audio_description:
 				mediadesc = "(Audio, %s: %s)" % (format_audio_duration(media.duration), media.desc)
+			else:
+				mediadesc = "(Audio, %s)" % format_audio_duration(media.duration)
 		elif media.type == "document":
 			if self.conf.forward_document_mime:
 				mediadesc = "(Document, %s)" % media.mime

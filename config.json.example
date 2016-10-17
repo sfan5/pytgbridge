@@ -16,6 +16,7 @@
 			"irc_nick_colors": [2, 4, 12], // colorize nicks in IRC, omit to use default color set, use [] to disable
 			"forward_sticker_dimensions": false, // show (Sticker, 512x512) instead of (Sticker)
 			"forward_document_mime": true, // show (Document, video/mp4) instead of (Document)
+			"forward_audio_description": true, // show (Audio, 3m47s: Rebecca Black – Friday) instead of (Audio, 3m47s) if possible
 			"forward_text_formatting": false // Forward bold and italics formatting (currently only IRC->Telegram)
 		},
 		"links": [
@@ -27,12 +28,12 @@
 	"web_backend": {
 		"type": "external", // stub, builtin or external
 
-		// builtin
+		// options for builtin:
 		"bind": "44.32.11.0", // host to bind to, optional (defaults to 127.0.0.1)
 		"port": 8081, // port to bind to
 		"use_subdirs": true // whether to spread files to 26 subdirs
 
-		// external
+		// options for external:
 		"webpath": "/var/www/tg", // where to write files
 		"baseurl": "http://yourname.me/tg", // external URL of that folder
 		"use_subdirs": true // whether to spread files to 26 subdirs
