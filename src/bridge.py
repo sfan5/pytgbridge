@@ -44,8 +44,8 @@ class TextFormattingConverter():
 		skip_digits = 0
 		ret = ""
 		for c in text:
-			if skip_digits > 0 and c.isdigit():
-				skip_digits -= 1
+			if skip_digits > 0:
+				skip_digits = (skip_digits - 1) if c.isdigit() else 0
 				continue
 			# Handle styles
 			if c == "\x02":
