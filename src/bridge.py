@@ -41,6 +41,7 @@ class TextFormattingConverter():
 		self.enabled = enabled
 	def irc2md(self, text):
 		bold, italics = False, False
+		last_was_opening_style = False
 		skip_digits = 0
 		ret = ""
 		for c in text:
@@ -51,24 +52,36 @@ class TextFormattingConverter():
 			if c == "\x02":
 				bold = not bold
 				ret += "*" if self.enabled else ""
+				last_was_opening_style = self.enabled and bold
 			elif c == "\x03": # color (ignored)
 				skip_digits = 2
 			elif c == "\x0f": # reset
 				if bold:
-					ret += "*"
+					ret += "*" if self.enabled else ""
 				if italics:
-					ret += "_"
+					ret += "_" if self.enabled else ""
+				if bold or italics:
+					last_was_opening_style = self.enabled
 				bold, italics = False, False
 			elif c == "\x1d":
 				italics = not italics
 				ret += "_" if self.enabled else ""
+				last_was_opening_style = self.enabled and italics
 			elif c == "\x1f": # underline (ignored)
 				pass
 			else:
 				# Handle text: escape if required and pass through
-				if c in ("*", "_", "[", "`"):
+				if c in ("*", "_", "`"):
+					c = "\\" + c
+				elif c == "[" and not last_was_opening_style:
+					# Workaround for Telegrams broken Markdown parser:
+					#   When escaping a [ after a text style char (* or _)
+					#   it will show up as \[
+					# but ONLY if that text style char marked the beginning
+					#   of a formatted text range
 					c = "\\" + c
 				ret += c
+				last_was_opening_style = False
 		if bold:
 			ret += "*" if self.enabled else ""
 		if italics:
