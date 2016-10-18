@@ -6,7 +6,7 @@ class IRCEvent():
 	def __init__(self, orig):
 		self.nick, self.mask = orig.source.split("!")
 		self.channel = orig.target if orig.target.startswith("#") else None
-		self.message = orig.arguments[0]
+		self.message = orig.arguments[0] if len(orig.arguments) > 0 else None
 
 class IRCBot(irc.bot.SingleServerIRCBot):
 	def __init__(self, args, kwargs={}, ns_password=None):
@@ -41,6 +41,14 @@ class IRCBot(irc.bot.SingleServerIRCBot):
 
 	def on_action(self, conn, event):
 		self._invoke_event_handler("action", (IRCEvent(event), ))
+
+	def on_join(self, conn, event):
+		if event.source.split("!")[0] == conn.get_nickname():
+			return
+		self._invoke_event_handler("join", (IRCEvent(event), ))
+
+	def on_part(self, conn, event):
+		self._invoke_event_handler("part", (IRCEvent(event), ))
 
 	def on_error(self, conn, event):
 		logging.warning("IRC connection error, reconnecting")

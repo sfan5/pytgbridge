@@ -114,6 +114,8 @@ class Bridge():
 		self.irc.event_handler("connected", self.irc_connected)
 		self._irc_event_handler("message", self.irc_message)
 		self._irc_event_handler("action", self.irc_action)
+		self._irc_event_handler("join", self.irc_join)
+		self._irc_event_handler("part", self.irc_part)
 		self.tg.event_handler("cmd_help", self.tg_help)
 		self._tg_event_handler("cmd_me", self.tg_me)
 		self._tg_event_handler("text", self.tg_text)
@@ -214,6 +216,22 @@ class Bridge():
 		else:
 			fmt = "* %s %s"
 		self.tg.send_message(l.telegram, fmt % (event.nick, self.tf.irc2html(event.message)), parse_mode="HTML")
+
+	def irc_join(self, l, event):
+		logging.info("[IRC] %s joins %s", event.nick, event.channel)
+		if self.conf.telegram_bold_nicks:
+			fmt = "<b>%s</b> has joined"
+		else:
+			fmt = "%s has joined"
+		self.tg.send_message(l.telegram, fmt % event.nick, parse_mode="HTML")
+
+	def irc_part(self, l, event):
+		logging.info("[IRC] %s leaves %s", event.nick, event.channel)
+		if self.conf.telegram_bold_nicks:
+			fmt = "<b>%s</b> has left"
+		else:
+			fmt = "%s has left"
+		self.tg.send_message(l.telegram, fmt % event.nick, parse_mode="HTML")
 
 
 	def tg_help(self, event):
