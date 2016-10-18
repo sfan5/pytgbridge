@@ -190,7 +190,15 @@ class Bridge():
 
 	def _tg_format_msg(self, event):
 		if event.reply_to_message is not None:
-			pre = "@%s, " % self.nc.colorize(self._tg_format_user(event.reply_to_message.from_user))
+			# FIXME: possibly cleaner ways of doing this
+			if event.reply_to_message.from_user.id == self.tg.get_own_user().id:
+				m = re.match(r"<([^>]+)> ", event.reply_to_message.text or "")
+				if m:
+					pre = "%s, " % m.group(1)
+				else:
+					pre = "(Reply to IRC action) " # TODO: support non-message events
+			else:
+				pre = "@%s, " % self.nc.colorize(self._tg_format_user(event.reply_to_message.from_user))
 		else:
 			pre = ""
 		# TODO: support non-text messages here (for pinned msgs)

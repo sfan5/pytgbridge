@@ -84,6 +84,7 @@ class TelegramClient():
 		self.token = config["token"]
 		self.bot = telebot.TeleBot(self.token)
 		self.event_handlers = {}
+		self.own_user = None
 
 		self._telebot_event_handler(self.cmd_start, commands=["start"])
 		self._telebot_event_handler(self.cmd_help, commands=["help"])
@@ -96,6 +97,7 @@ class TelegramClient():
 		self._telebot_event_handler(self.on_content_type_none, content_types=[None])
 
 	def run(self):
+		self.own_user = self.bot.get_me()
 		logging.info("Polling for Telegram events")
 		self.bot.polling()
 
@@ -155,3 +157,6 @@ class TelegramClient():
 	def get_file_url(self, file_id):
 		info = self.bot.get_file(file_id)
 		return "https://api.telegram.org/file/bot%s/%s" % (self.token, info.file_path)
+
+	def get_own_user(self):
+		return self.own_user
