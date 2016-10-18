@@ -52,7 +52,8 @@ class TextFormattingConverter():
 		for c in text:
 			if skip_digits > 0:
 				skip_digits = (skip_digits - 1) if c.isdigit() else 0
-				continue
+				if c.isdigit():
+					continue
 			# Handle styles
 			if c == "\x02":
 				ret += self.bold.close if bold else self.bold.open
