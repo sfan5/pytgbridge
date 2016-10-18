@@ -179,13 +179,9 @@ class Bridge():
 		fmt = "* %s" if action else "<%s>"
 		r = fmt % self.nc.colorize(self._tg_format_user(event.from_user))
 		if event.forward_from is not None:
-			if event.forward_from_chat is not None:
-				r += " Fwd from %s in %s" % (
-					self.nc.colorize(self._tg_format_user(event.forward_from)),
-					event.forward_from_chat.title,
-				)
-			else:
-				r += " Fwd from %s:" % self.nc.colorize(self._tg_format_user(event.forward_from))
+			r += " Fwd from %s:" % self.nc.colorize(self._tg_format_user(event.forward_from))
+		elif event.forward_from_chat is not None:
+			r += " Fwd from %s:" % event.forward_from_chat.title
 		return r
 
 	def _tg_format_msg(self, event):
