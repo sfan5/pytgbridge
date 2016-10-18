@@ -39,9 +39,14 @@ class NickColorizer():
 class TextFormattingConverter():
 	def __init__(self, enabled):
 		self.enabled = enabled
-	def irc2md(self, text):
+		tmp = namedtuple("StyleCombo", ["open", "close"])
+		if self.enabled:
+			self.bold = tmp(open="<b>", close="</b>")
+			self.italics = tmp(open="<i>", close="</i>")
+		else:
+			self.bold = self.italics = tmp(open="", close="")
+	def irc2html(self, text):
 		bold, italics = False, False
-		last_was_opening_style = False
 		skip_digits = 0
 		ret = ""
 		for c in text:
@@ -50,46 +55,34 @@ class TextFormattingConverter():
 				continue
 			# Handle styles
 			if c == "\x02":
+				ret += self.bold.close if bold else self.bold.open
 				bold = not bold
-				ret += "*" if self.enabled else ""
-				last_was_opening_style = self.enabled and bold
 			elif c == "\x03": # color (ignored)
 				skip_digits = 2
 			elif c == "\x0f": # reset
 				if bold:
-					ret += "*" if self.enabled else ""
+					ret += self.bold.close
 				if italics:
-					ret += "_" if self.enabled else ""
-				if bold or italics:
-					last_was_opening_style = self.enabled
+					ret += self.italics.close
 				bold, italics = False, False
 			elif c == "\x1d":
+				ret += self.italics.close if italics else self.italics.open
 				italics = not italics
-				ret += "_" if self.enabled else ""
-				last_was_opening_style = self.enabled and italics
 			elif c == "\x1f": # underline (ignored)
 				pass
 			else:
 				# Handle text: escape if required and pass through
-				if c in ("*", "_", "`"):
-					c = "\\" + c
-				elif c == "[" and not last_was_opening_style:
-					# Workaround for Telegrams broken Markdown parser:
-					#   When escaping a [ after a text style char (* or _)
-					#   it will show up as \[
-					# but ONLY if that text style char marked the beginning
-					#   of a formatted text range
-					c = "\\" + c
+				if c in ("<", ">", "&"):
+					c = "&#" + str(ord(c)) + ";"
 				ret += c
-				last_was_opening_style = False
 		if bold:
-			ret += "*" if self.enabled else ""
+			ret += self.bold.close
 		if italics:
-			ret += "_" if self.enabled else ""
+			ret += self.italics.close
 		return ret
 				
-	def md2irc(self, text):
-		# TODO maybe
+	def html2irc(self, text):
+		# TODO: Is this even possible with Telegram's Bot API?
 		return text
 
 LinkTuple = namedtuple("LinkTuple", ["telegram", "irc"])
@@ -203,8 +196,11 @@ class Bridge():
 			return
 		#
 		logging.info("[IRC] %s in %s says: %s", event.nick, event.channel, event.message)
-		fmt = "<*%s*> %s" if self.conf.telegram_bold_nicks else "<%s> %s"
-		self.tg.send_message(l.telegram, fmt % (event.nick, self.tf.irc2md(event.message)), parse_mode="Markdown")
+		if self.conf.telegram_bold_nicks:
+			fmt = "&lt;<b>%s</b>&gt; %s"
+		else:
+			fmt = "&lt;%s&gt; %s"
+		self.tg.send_message(l.telegram, fmt % (event.nick, self.tf.irc2html(event.message)), parse_mode="HTML")
 
 	def irc_action(self, event):
 		if event.channel is None:
@@ -215,8 +211,11 @@ class Bridge():
 			return
 		#
 		logging.info("[IRC] %s in %s does action: %s", event.nick, event.channel, event.message)
-		fmt = "\* *%s* %s" if self.conf.telegram_bold_nicks else "\* %s %s"
-		self.tg.send_message(l.telegram, fmt % (event.nick, self.tf.irc2md(event.message)), parse_mode="Markdown")
+		if self.conf.telegram_bold_nicks:
+			fmt = "* <b>%s</b> %s"
+		else:
+			fmt = "* %s %s"
+		self.tg.send_message(l.telegram, fmt % (event.nick, self.tf.irc2html(event.message)), parse_mode="HTML")
 
 
 	def tg_help(self, event):
