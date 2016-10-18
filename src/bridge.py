@@ -112,8 +112,8 @@ class Bridge():
 		self.tf = TextFormattingConverter(self.conf.forward_text_formatting)
 
 		self.irc.event_handler("connected", self.irc_connected)
-		self.irc.event_handler("message", self.irc_message)
-		self.irc.event_handler("action", self.irc_action)
+		self._irc_event_handler("message", self.irc_message)
+		self._irc_event_handler("action", self.irc_action)
 		self.tg.event_handler("cmd_help", self.tg_help)
 		self._tg_event_handler("cmd_me", self.tg_me)
 		self._tg_event_handler("text", self.tg_text)
@@ -126,6 +126,18 @@ class Bridge():
 		self._tg_event_handler("cphoto_changed", self.tg_cphoto_changed)
 		self._tg_event_handler("cphoto_deleted", self.tg_cphoto_deleted)
 		self._tg_event_handler("cpinned_changed", self.tg_cpinned_changed)
+
+	def _irc_event_handler(self, event, func):
+		# So we don't have to repeat this code in every handler
+		def wrap(event, *args):
+			if event.channel is None:
+				return
+			l = self._find_link(irc=event)
+			if l is None:
+				logging.warning("IRC channel %s is not linked to anywhere", event.channel)
+				return
+			func(l, event, *args)
+		self.irc.event_handler(event, wrap)
 
 	def _tg_event_handler(self, event, func):
 		# So we don't have to repeat this code in every handler
@@ -187,14 +199,7 @@ class Bridge():
 		for l in self.links:
 			self.irc.join(l.irc)
 
-	def irc_message(self, event):
-		if event.channel is None:
-			return
-		l = self._find_link(irc=event)
-		if l is None:
-			logging.warning("IRC channel %s is not linked to anywhere", event.channel)
-			return
-		#
+	def irc_message(self, l, event):
 		logging.info("[IRC] %s in %s says: %s", event.nick, event.channel, event.message)
 		if self.conf.telegram_bold_nicks:
 			fmt = "&lt;<b>%s</b>&gt; %s"
@@ -202,14 +207,7 @@ class Bridge():
 			fmt = "&lt;%s&gt; %s"
 		self.tg.send_message(l.telegram, fmt % (event.nick, self.tf.irc2html(event.message)), parse_mode="HTML")
 
-	def irc_action(self, event):
-		if event.channel is None:
-			return
-		l = self._find_link(irc=event)
-		if l is None:
-			logging.warning("IRC channel %s is not linked to anywhere", event.channel)
-			return
-		#
+	def irc_action(self, l, event):
 		logging.info("[IRC] %s in %s does action: %s", event.nick, event.channel, event.message)
 		if self.conf.telegram_bold_nicks:
 			fmt = "* <b>%s</b> %s"
