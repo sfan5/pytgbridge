@@ -2,6 +2,8 @@ import irc.connection
 import irc.bot
 import logging
 
+MESSAGE_SPLIT_LEN = 420
+
 class IRCEvent():
 	def __init__(self, orig):
 		self.nick, self.mask = orig.source.split("!")
@@ -75,8 +77,15 @@ class IRCClient():
 	def join(self, channel):
 		self.bot.connection.join(channel)
 	def privmsg(self, target, message):
+		if len(message) < MESSAGE_SPLIT_LEN:
+			msgs = [message]
+		else:
+			msgs = []
+			for i in range(0, len(message), MESSAGE_SPLIT_LEN):
+				msgs.append(message[i:i + MESSAGE_SPLIT_LEN])
 		try:
-			self.bot.connection.privmsg(target, message)
+			for m in msgs:
+				self.bot.connection.privmsg(target, m)
 		except irc.client.ServerNotConnectedError:
 			logging.warning("Dropping message because IRC not connected yet")
 
