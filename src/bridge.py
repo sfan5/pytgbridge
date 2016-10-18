@@ -94,6 +94,8 @@ config_names = [
 	"forward_document_mime",
 	"forward_audio_description",
 	"forward_text_formatting",
+	"forward_joinleave_irc",
+	"forward_joinleave_telegram"
 ]
 
 class Bridge():
@@ -219,6 +221,8 @@ class Bridge():
 
 	def irc_join(self, l, event):
 		logging.info("[IRC] %s joins %s", event.nick, event.channel)
+		if not self.conf.forward_joinleave_irc:
+			return
 		if self.conf.telegram_bold_nicks:
 			fmt = "<b>%s</b> has joined"
 		else:
@@ -227,6 +231,8 @@ class Bridge():
 
 	def irc_part(self, l, event):
 		logging.info("[IRC] %s leaves %s", event.nick, event.channel)
+		if not self.conf.forward_joinleave_irc:
+			return
 		if self.conf.telegram_bold_nicks:
 			fmt = "<b>%s</b> has left"
 		else:
@@ -296,6 +302,8 @@ class Bridge():
 
 	def tg_user_joined(self, l, event):
 		logging.info("[TG] user joined: %d", event.new_chat_member.id)
+		if not self.conf.forward_joinleave_telegram:
+			return
 		if event.from_user.id == event.new_chat_member.id:
 			self.irc.privmsg(l.irc, "%s has joined" % self.nc.colorize(self._tg_format_user(event.from_user)))
 		else:
@@ -306,6 +314,8 @@ class Bridge():
 
 	def tg_user_left(self, l, event):
 		logging.info("[TG] user left: %d", event.left_chat_member.id)
+		if not self.conf.forward_joinleave_telegram:
+			return
 		if event.from_user.id == event.left_chat_member.id:
 			self.irc.privmsg(l.irc, "%s has left" % self.nc.colorize(self._tg_format_user(event.from_user)))
 		else:

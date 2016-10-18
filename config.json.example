@@ -17,7 +17,9 @@
 			"forward_sticker_dimensions": false, // show (Sticker, 512x512) instead of (Sticker)
 			"forward_document_mime": true, // show (Document, video/mp4) instead of (Document)
 			"forward_audio_description": true, // show (Audio, 3m47s: Rebecca Black – Friday) instead of (Audio, 3m47s) if possible
-			"forward_text_formatting": false // Forward bold and italics formatting (currently only IRC->Telegram)
+			"forward_text_formatting": false, // Forward bold and italics formatting (currently only IRC->Telegram)
+			"forward_joinleave_irc": false, // Forward joins/part from IRC to Telegram
+			"forward_joinleave_telegram": true // Forward added/removed users from Telegram to IRC
 		},
 		"links": [
 			// find out the telegram id by adding the bot to a channel and looking at the log
