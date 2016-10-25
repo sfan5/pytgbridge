@@ -115,7 +115,12 @@ class TelegramClient():
 			logging.exception("Exception in Telegram event handler")
 
 	def _telebot_event_handler(self, _func, **kwargs):
-		self.bot.message_handler(**kwargs)(_func)
+		def wrap(*args):
+			try:
+				_func(*args)
+			except Exception as e:
+				logging.exception("!!EXCEPTION IN TELEGRAM CODE (open an issue on github)!!")
+		self.bot.message_handler(**kwargs)(wrap)
 
 	def _telebot_event_handler_passthrough(self, evname, **kwargs):
 		def h(message):
