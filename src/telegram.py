@@ -99,7 +99,11 @@ class TelegramClient():
 	def run(self):
 		self.own_user = self.bot.get_me()
 		logging.info("Polling for Telegram events")
-		self.bot.polling()
+		while True:
+			try:
+				self.bot.polling()
+			except Exception as e:
+				logging.warning("%s while polling Telegram, retrying", type(e).__name__)
 
 	def event_handler(self, name, func):
 		self.event_handlers[name] = func
