@@ -52,9 +52,9 @@ class IRCBot(irc.bot.SingleServerIRCBot):
 	def on_part(self, conn, event):
 		self._invoke_event_handler("part", (IRCEvent(event), ))
 
-	def on_error(self, conn, event):
+	def on_disconnect(self, conn, event):
 		logging.warning("IRC connection error, reconnecting")
-		conn.reconnect()
+		self.jump_server()
 
 class IRCClient():
 	def __init__(self, config):
