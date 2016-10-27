@@ -148,8 +148,6 @@ class TelegramClient():
 		self._invoke_event_handler("cmd_help", (message, ))
 
 	def cmd_me(self, message):
-		if not self._is_our_cmd(message):
-			return
 		self._invoke_event_handler("cmd_me", (message, ))
 
 	def on_media(self, message):
