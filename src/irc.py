@@ -1,5 +1,6 @@
 import irc.connection
 import irc.bot
+import socket
 import logging
 
 MESSAGE_SPLIT_LEN = 420
@@ -58,15 +59,23 @@ class IRCBot(irc.bot.SingleServerIRCBot):
 
 class IRCClient():
 	def __init__(self, config):
+		# Read config
 		args = {}
-		if "ipv6" in config.keys():
-			args["ipv6"] = config["ipv6"]
-		else:
-			args["ipv6"] = True
+		args["ipv6"] = True if "ipv6" not in config.keys() else config["ipv6"]
 		if config["ssl"]:
 			args["wrapper"] = __import__("ssl").wrap_socket
+		# Resolve host
+		family = 0 if args["ipv6"] else socket.AF_INET
+		try:
+			ai = socket.getaddrinfo(config["server"], 0, family=family, proto=socket.IPPROTO_TCP)
+		except socket.gaierror as e:
+			logging.error("Failed to resolve hostname: %r", e)
+			exit(1)
+		args["ipv6"] = args["ipv6"] and ai[0][0] == socket.AF_INET6 # this determines the socket type used
+		host = ai[0][4][0]
+		# Actually create bot with correct params
 		kwargs = {"connect_factory": irc.connection.Factory(**args)}
-		args = [[(config["server"], config["port"])], config["nick"], "pytgbridge (IRC)"]
+		args = [[(host, config["port"])], config["nick"], "pytgbridge (IRC)"]
 		ns_password = None if "nickpassword" not in config.keys() else config["nickpassword"]
 		self.bot = IRCBot(args, kwargs, ns_password=ns_password)
 	def run(self):
