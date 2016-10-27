@@ -7,9 +7,9 @@ mapped_content_type = {
 	"contact": "contact",
 	"new_chat_member": "user_joined",
 	"left_chat_member": "user_left",
-	"group_chat_created": "", # can't occurr because we're a bot
-	"supergroup_chat_created": "", # can't occurr because we're a bot
-	"channel_chat_created": "", # can't occurr because we're a bot
+	"group_chat_created": "", # can't occur because we're a bot
+	"supergroup_chat_created": "", # can't occur because we're a bot
+	"channel_chat_created": "", # can't occur because we're a bot
 	"migrate_to_chat_id": "", # FIXME: can we safely ignore these?
 	"migrate_from_chat_id": "", # FIXME: can we safely ignore these?
 }
@@ -88,7 +88,8 @@ class TelegramClient():
 
 		self._telebot_event_handler(self.cmd_start, commands=["start"])
 		self._telebot_event_handler(self.cmd_help, commands=["help"])
-		self._telebot_event_handler(self.cmd_me, commands=["me"]) # FIXME: not portable
+		# FIXME: not a portable way of registering commands
+		self._telebot_event_handler(self.cmd_me, commands=["me"])
 		for k, v in mapped_content_type.items():
 			if v == "": continue
 			self._telebot_event_handler_passthrough(v, content_types=[k])
@@ -126,14 +127,29 @@ class TelegramClient():
 			self._invoke_event_handler(evname, (message, ))
 		self._telebot_event_handler(h, **kwargs)
 
+	def _is_our_cmd(self, message):
+		# workaround because pyTelegramBotAPI is missing this
+		cmd = message.text.split(" ")[0]
+		if "@" in cmd:
+			botname = cmd.split("@")[1]
+			return botname == self.own_user.username
+		else:
+			return message.chat.type == "private"
+
 
 	def cmd_start(self, message):
+		if not self._is_our_cmd(message):
+			return
 		self._invoke_event_handler("cmd_start", (message, ))
 
 	def cmd_help(self, message):
+		if not self._is_our_cmd(message):
+			return
 		self._invoke_event_handler("cmd_help", (message, ))
 
 	def cmd_me(self, message):
+		if not self._is_our_cmd(message):
+			return
 		self._invoke_event_handler("cmd_me", (message, ))
 
 	def on_media(self, message):
