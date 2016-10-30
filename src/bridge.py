@@ -119,6 +119,7 @@ class Bridge():
 		self._irc_event_handler("action", self.irc_action)
 		self._irc_event_handler("join", self.irc_join)
 		self._irc_event_handler("part", self.irc_part)
+		self._irc_event_handler("kick", self.irc_kick)
 		self.tg.event_handler("cmd_help", self.tg_help)
 		self._tg_event_handler("cmd_me", self.tg_me)
 		self._tg_event_handler("text", self.tg_text)
@@ -243,6 +244,14 @@ class Bridge():
 		else:
 			fmt = "%s has left"
 		self.tg.send_message(l.telegram, fmt % event.nick, parse_mode="HTML")
+
+	def irc_kick(self, l, event):
+		logging.info("[IRC] %s kicks %s", event.nick, event.othernick)
+		if self.conf.telegram_bold_nicks:
+			fmt = "<b>%s</b> was kicked by <b>%s</b>"
+		else:
+			fmt = "%s was kicked by %s"
+		self.tg.send_message(l.telegram, fmt % (event.othernick, event.nick), parse_mode="HTML")
 
 
 	def tg_help(self, event):
