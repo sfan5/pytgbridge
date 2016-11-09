@@ -13,8 +13,9 @@
 	"bridge": {
 		"options": {
 			"telegram_bold_nicks": true, // make nicks bold in telegram
-			"irc_nick_colors": [2, 4, 12], // colorize nicks in IRC, omit to use default color set, use [] to disable
+			//"irc_nick_colors": [2, 4, 12], // colorize nicks on IRC with custom colors, use [] to disable
 			"forward_sticker_dimensions": false, // show (Sticker, 512x512) instead of (Sticker)
+			"forward_sticker_emoji": false, // show emoji attached to sticker after (Sticker) tag
 			"forward_document_mime": true, // show (Document, video/mp4) instead of (Document)
 			"forward_audio_description": true, // show (Audio, 3m47s: Rebecca Black – Friday) instead of (Audio, 3m47s) if possible
 			"forward_text_formatting": false, // Forward bold and italics formatting (currently only IRC->Telegram)

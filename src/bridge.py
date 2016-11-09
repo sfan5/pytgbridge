@@ -2,11 +2,16 @@ import re
 import logging
 from collections import namedtuple
 
-def dump(obj, name): ##DEBUG##
-	for e in dir(obj):
+def dump(obj, name=None, r=False): ##DEBUG##
+	name = "" if name is None else (name + ".")
+	for e, ev in ((e, getattr(obj, e)) for e in dir(obj)):
 		if e.startswith("_"):
 			continue
-		print("%s.%s = %r" % (name, e, getattr(obj, e)))
+		if r and ev.__class__.__name__[0].isupper() and ev.__class__ != None.__class__:
+			print("%s%s (%s)" % (name, e, ev.__class__.__name__))
+			dump(ev, name + e, r)
+		else:
+			print("%s%s = %r" % (name, e, ev))
 
 def format_audio_duration(d):
 	m, s = divmod(d, 60)
@@ -92,6 +97,7 @@ config_names = [
 	"irc_nick_colors",
 
 	"forward_sticker_dimensions",
+	"forward_sticker_emoji",
 	"forward_document_mime",
 	"forward_audio_description",
 	"forward_text_formatting",
@@ -288,6 +294,8 @@ class Bridge():
 				mediadesc = "(Sticker, %dx%d)" % media.dimensions
 			else:
 				mediadesc = "(Sticker)"
+			if self.conf.forward_sticker_emoji:
+				mediadesc += " " + media.emoji
 		elif media.type == "video":
 			mediadesc = "(Video, %s)" % format_audio_duration(media.duration)
 		elif media.type == "voice":
