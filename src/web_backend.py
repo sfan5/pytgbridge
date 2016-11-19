@@ -38,11 +38,12 @@ class WebBackend():
 			self.subdirs = config["use_subdirs"]
 		elif self.type == "builtin":
 			bind = "127.0.0.1" if "bind" not in config else config["bind"]
+			extern = bind if "external" not in config else config["external"]
 			port = config["port"]
 			self.subdirs = config["use_subdirs"]
 			# Used by download_and_serve():
 			self.webpath = tempfile.mkdtemp()
-			self.baseurl = "http://%s:%d" % (bind, port)
+			self.baseurl = "http://%s:%d" % (extern, port)
 			t = threading.Thread(target=http_server_thread, args=(bind, port, self.webpath))
 			t.start()
 		elif self.type == "stub":

@@ -33,6 +33,7 @@
 
 		// options for builtin:
 		"bind": "44.32.11.0", // host to bind to, optional (defaults to 127.0.0.1)
+		//"external": "myself.dyndns.org", // force differing IP/host for URLs
 		"port": 8081, // port to bind to
 		"use_subdirs": true // whether to spread files to 26 subdirs
 
