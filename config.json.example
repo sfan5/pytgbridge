@@ -1,4 +1,7 @@
 {
+	// NOTE THAT YOU NEED TO REMOVE ALL COMMENTS FROM THIS FILE PRIOR TO RUNNING
+	// optional settings are commented out
+
 	"telegram": {
 		"token": "123456:BOT-TOKEN-HERE"
 	},
@@ -6,14 +9,14 @@
 		"server": "irc.freenode.net",
 		"port": 6697,
 		"ssl": true,
-		"ipv6": true, // use IPv6 if possible, optional (defaults to true)
+		//"ipv6": true, // control usage of IPv6 (defaults to true)
 		"nick": "tg_bridge",
-		"nickpassword": "s3cret" // NickServ password, omit to disable logging in
+		//"nickpassword": "s3cret" // NickServ password
 	},
 	"bridge": {
 		"options": {
 			"telegram_bold_nicks": true, // make nicks bold in telegram
-			//"irc_nick_colors": [2, 4, 12], // colorize nicks on IRC with custom colors, use [] to disable
+			//"irc_nick_colors": [2, 4, 12], // custom color set for nick colorization on IRC, use [] to disable
 			"forward_sticker_dimensions": false, // show (Sticker, 512x512) instead of (Sticker)
 			"forward_sticker_emoji": false, // show emoji attached to sticker after (Sticker) tag
 			"forward_document_mime": true, // show (Document, video/mp4) instead of (Document)
@@ -32,8 +35,8 @@
 		"type": "external", // stub, builtin or external
 
 		// options for builtin:
-		"bind": "44.32.11.0", // host to bind to, optional (defaults to 127.0.0.1)
-		//"external": "myself.dyndns.org", // force differing IP/host for URLs
+		//"bind": "44.32.11.0", // host to bind to (defaults to 127.0.0.1)
+		//"external": "myself.dyndns.org", // force differing IP/domain for URLs
 		"port": 8081, // port to bind to
 		"use_subdirs": true // whether to spread files to 26 subdirs
 
