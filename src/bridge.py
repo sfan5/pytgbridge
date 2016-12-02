@@ -5,15 +5,15 @@ from collections import namedtuple
 def dump(obj, name=None, r=False): ##DEBUG##
 	name = "" if name is None else (name + ".")
 	for e, ev in ((e, getattr(obj, e)) for e in dir(obj)):
-		if e.startswith("_"):
+		if e.startswith("_") or ev is None:
 			continue
-		if r and ev.__class__.__name__[0].isupper() and ev.__class__ != None.__class__:
+		if r and ev.__class__.__name__[0].isupper():
 			print("%s%s (%s)" % (name, e, ev.__class__.__name__))
 			dump(ev, name + e, r)
 		else:
 			print("%s%s = %r" % (name, e, ev))
 
-def format_audio_duration(d):
+def format_duration(d):
 	m, s = divmod(d, 60)
 	if m == 0:
 		return "%ds" % s
@@ -41,7 +41,7 @@ class NickColorizer():
 		color = self.colors[color]
 		return "\x03%02d%s\x0f" % (color, s)
 
-class TextFormattingConverter():
+class TextFormattingConverter(): # IRC -> HTML
 	def __init__(self, enabled):
 		self.enabled = enabled
 		tmp = namedtuple("StyleCombo", ["open", "close"])
@@ -50,7 +50,7 @@ class TextFormattingConverter():
 			self.italics = tmp(open="<i>", close="</i>")
 		else:
 			self.bold = self.italics = tmp(open="", close="")
-	def irc2html(self, text):
+	def convert(self, text):
 		bold, italics = False, False
 		skip_digits = 0
 		ret = ""
@@ -86,10 +86,6 @@ class TextFormattingConverter():
 		if italics:
 			ret += self.italics.close
 		return ret
-				
-	def html2irc(self, text):
-		# TODO: Is this even possible with Telegram's Bot API?
-		return text
 
 LinkTuple = namedtuple("LinkTuple", ["telegram", "irc"])
 config_names = [
@@ -221,7 +217,7 @@ class Bridge():
 			fmt = "&lt;<b>%s</b>&gt; %s"
 		else:
 			fmt = "&lt;%s&gt; %s"
-		self.tg.send_message(l.telegram, fmt % (event.nick, self.tf.irc2html(event.message)), parse_mode="HTML")
+		self.tg.send_message(l.telegram, fmt % (event.nick, self.tf.convert(event.message)), parse_mode="HTML")
 
 	def irc_action(self, l, event):
 		logging.info("[IRC] %s in %s does action: %s", event.nick, event.channel, event.message)
@@ -229,7 +225,7 @@ class Bridge():
 			fmt = "* <b>%s</b> %s"
 		else:
 			fmt = "* %s %s"
-		self.tg.send_message(l.telegram, fmt % (event.nick, self.tf.irc2html(event.message)), parse_mode="HTML")
+		self.tg.send_message(l.telegram, fmt % (event.nick, self.tf.convert(event.message)), parse_mode="HTML")
 
 	def irc_join(self, l, event):
 		logging.info("[IRC] %s joins %s", event.nick, event.channel)
@@ -279,9 +275,9 @@ class Bridge():
 		mediadesc = "(???)"
 		if media.type == "audio":
 			if media.desc is not None and self.conf.forward_audio_description:
-				mediadesc = "(Audio, %s: %s)" % (format_audio_duration(media.duration), media.desc)
+				mediadesc = "(Audio, %s: %s)" % (format_duration(media.duration), media.desc)
 			else:
-				mediadesc = "(Audio, %s)" % format_audio_duration(media.duration)
+				mediadesc = "(Audio, %s)" % format_duration(media.duration)
 		elif media.type == "document":
 			if self.conf.forward_document_mime:
 				mediadesc = "(Document, %s)" % media.mime
@@ -297,9 +293,9 @@ class Bridge():
 			if self.conf.forward_sticker_emoji:
 				mediadesc += " " + media.emoji
 		elif media.type == "video":
-			mediadesc = "(Video, %s)" % format_audio_duration(media.duration)
+			mediadesc = "(Video, %s)" % format_duration(media.duration)
 		elif media.type == "voice":
-			mediadesc = "(Voice, %s)" % format_audio_duration(media.duration)
+			mediadesc = "(Voice, %s)" % format_duration(media.duration)
 		#
 		url = self.web.download_and_serve(self.tg.get_file_url(media.file_id))
 		post = (" " + event.caption) if event.caption is not None else ""
