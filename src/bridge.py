@@ -30,9 +30,12 @@ class NickColorizer():
 	@staticmethod
 	def _hash(s):
 		v = 0
+		state = 0x34343434
 		for c in s:
-			v += ord(c)
-			v = (v << 2) & 0xffff | (v >> 14) # ROR by 2 bits
+			c = ord(c)
+			v += ((c >> 4) ^ (c >> 2)) + state
+			state = (state + 0x79B99E37) & 0xffffffff
+			v += ((c >> 1) ^ c) + state
 		return v
 	def colorize(self, s):
 		if len(self.colors) == 0: # disabled
