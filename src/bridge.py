@@ -302,6 +302,7 @@ class Bridge():
 		#
 		url = self.web.download_and_serve(self.tg.get_file_url(media.file_id))
 		post = (" " + event.caption) if event.caption is not None else ""
+		post = post.replace("\n", " … ")
 		self.irc.privmsg(l.irc, self._tg_format_msg_prefix(event) + " " + mediadesc + " " + url + post)
 
 	def tg_location(self, l, event):
