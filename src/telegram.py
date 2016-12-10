@@ -23,6 +23,8 @@ content_types_media = [
 	"voice",
 ]
 
+telebot.logger.setLevel(logging.WARNING) # make telebot shut up a little
+
 def ostr(obj):
 	if obj is None:
 		return ""
