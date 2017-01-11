@@ -276,6 +276,7 @@ class Bridge():
 	def tg_media(self, l, event, media):
 		logging.info("[TG] media (%s)", media.type)
 		mediadesc = "(???)"
+		mediafilename = None # only needed if it differs from the default
 		if media.type == "audio":
 			if media.desc is not None and self.conf.forward_audio_description:
 				mediadesc = "(Audio, %s: %s)" % (format_duration(media.duration), media.desc)
@@ -299,8 +300,10 @@ class Bridge():
 			mediadesc = "(Video, %s)" % format_duration(media.duration)
 		elif media.type == "voice":
 			mediadesc = "(Voice, %s)" % format_duration(media.duration)
+			# use .ogg instead of .oga as browsers don't play it otherwise
+			mediafilename = self.tg.get_file_url(media.file_id).split("/")[-1][:-3] + "ogg"
 		#
-		url = self.web.download_and_serve(self.tg.get_file_url(media.file_id))
+		url = self.web.download_and_serve(self.tg.get_file_url(media.file_id), filename=mediafilename)
 		post = (" " + event.caption) if event.caption is not None else ""
 		post = post.replace("\n", " … ")
 		self.irc.privmsg(l.irc, self._tg_format_msg_prefix(event) + " " + mediadesc + " " + url + post)
