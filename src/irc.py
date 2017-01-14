@@ -2,6 +2,7 @@ import irc.connection
 import irc.bot
 import socket
 import logging
+from jaraco.stream import buffer
 
 MESSAGE_SPLIT_LEN = 420
 
@@ -14,6 +15,7 @@ class IRCEvent():
 class IRCBot(irc.bot.SingleServerIRCBot):
 	def __init__(self, args, kwargs={}, ns_password=None):
 		irc.bot.SingleServerIRCBot.__init__(self, *args, **kwargs)
+		self.connection.buffer_class = buffer.LenientDecodingLineBuffer
 		self.event_handlers = {}
 		self.ns_password = ns_password
 
