@@ -186,6 +186,16 @@ class Bridge():
 	def _tg_format_msg_prefix(self, event, action=False):
 		fmt = "* %s" if action else "<%s>"
 		r = fmt % self.nc.colorize(self._tg_format_user(event.from_user))
+		if event.reply_to_message is not None and not action:
+			if event.reply_to_message.from_user.id == self.tg.get_own_user().id:
+				# FIXME: possibly cleaner ways of doing this
+				m = re.match(r"<([^>]+)> ", event.reply_to_message.text or "")
+				if m:
+					r += " %s," % m.group(1)
+				else:
+					r += " (Reply to IRC action)" # TODO: support non-message events
+			else:
+				r += " @%s," % self.nc.colorize(self._tg_format_user(event.reply_to_message.from_user))
 		if event.forward_from is not None:
 			r += " Fwd from %s:" % self.nc.colorize(self._tg_format_user(event.forward_from))
 		elif event.forward_from_chat is not None:
@@ -193,22 +203,10 @@ class Bridge():
 		return r
 
 	def _tg_format_msg(self, event):
-		if event.reply_to_message is not None:
-			# FIXME: possibly cleaner ways of doing this
-			if event.reply_to_message.from_user.id == self.tg.get_own_user().id:
-				m = re.match(r"<([^>]+)> ", event.reply_to_message.text or "")
-				if m:
-					pre = "%s, " % m.group(1)
-				else:
-					pre = "(Reply to IRC action) " # TODO: support non-message events
-			else:
-				pre = "@%s, " % self.nc.colorize(self._tg_format_user(event.reply_to_message.from_user))
-		else:
-			pre = ""
-		# TODO: support non-text messages here (for pinned msgs)
+		# TODO: move code for media messages here (for media in pinned messages)
 		if event.content_type != "text":
-			return self._tg_format_msg_prefix(event) + " " + pre + "(Media message)"
-		return self._tg_format_msg_prefix(event) + " " + pre + event.text.replace("\n", " … ")
+			return self._tg_format_msg_prefix(event) + " " + "(Media message)"
+		return self._tg_format_msg_prefix(event) + " " + event.text.replace("\n", " … ")
 
 
 	def irc_connected(self):
