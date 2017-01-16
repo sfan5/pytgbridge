@@ -131,6 +131,7 @@ class Bridge():
 		self._tg_event_handler("media", self.tg_media)
 		self._tg_event_handler("location", self.tg_location)
 		self._tg_event_handler("contact", self.tg_contact)
+		self._tg_event_handler("game", self.tg_game)
 		self._tg_event_handler("user_joined", self.tg_user_joined)
 		self._tg_event_handler("user_left", self.tg_user_left)
 		self._tg_event_handler("ctitle_changed", self.tg_ctitle_changed)
@@ -324,6 +325,13 @@ class Bridge():
 			(" " + event.contact.last_name) if event.contact.last_name is not None else "",
 			event.contact.phone_number,
 		))
+
+	def tg_game(self, l, event):
+		logging.info("[TG] game")
+		gamedesc = "\"%s\"" % event.game.title
+		if event.game.description is not None:
+			gamedesc += ": " + event.game.description
+		self.irc.privmsg(l.irc, "%s (Game, %s)" % (self._tg_format_msg_prefix(event), gamedesc))
 
 	def tg_user_joined(self, l, event):
 		logging.info("[TG] user joined: %d", event.new_chat_member.id)

@@ -5,6 +5,7 @@ mapped_content_type = {
 	"text": "text",
 	"location": "location",
 	"contact": "contact",
+	"game": "game",
 	"new_chat_member": "user_joined",
 	"left_chat_member": "user_left",
 	"group_chat_created": "", # can't occur because we're a bot
