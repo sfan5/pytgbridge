@@ -300,7 +300,9 @@ class Bridge():
 		elif media.type == "voice":
 			mediadesc = "(Voice, %s)" % format_duration(media.duration)
 			# use .ogg instead of .oga as browsers don't play it otherwise
-			mediafilename = self.tg.get_file_url(media.file_id).split("/")[-1][:-3] + "ogg"
+			tmp = self.tg.get_file_url(media.file_id).split("/")[-1]
+			if tmp.endswith(".oga"):
+				mediafilename = tmp[:-3] + "ogg"
 		#
 		url = self.web.download_and_serve(self.tg.get_file_url(media.file_id), filename=mediafilename)
 		post = (" " + event.caption) if event.caption is not None else ""
