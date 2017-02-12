@@ -188,12 +188,12 @@ class Bridge():
 		r = fmt % self.nc.colorize(self._tg_format_user(event.from_user))
 		if event.reply_to_message is not None and not action:
 			if event.reply_to_message.from_user.id == self.tg.get_own_user().id:
-				# FIXME: possibly cleaner ways of doing this
-				m = re.match(r"<([^>]+)> ", event.reply_to_message.text or "")
+				m = re.match(r"(?:<([^>]+)>|\* ([^ ]+)) ", event.reply_to_message.text or "")
 				if m:
-					r += " %s," % m.group(1)
+					# i don't understand why this happens
+					r += " %s," % (m.group(1) or m.group(2))
 				else:
-					r += " (Reply to IRC action)" # TODO: support non-message events
+					logging.warning("Failed to parse our own message: %r", event.reply_to_message.text)
 			else:
 				r += " @%s," % self.nc.colorize(self._tg_format_user(event.reply_to_message.from_user))
 		if event.forward_from is not None:
