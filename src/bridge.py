@@ -44,7 +44,7 @@ class NickColorizer():
 		color = self.colors[color]
 		return "\x03%02d%s\x0f" % (color, s)
 
-class TextFormattingConverter(): # IRC -> HTML
+class IRCFormattingConverter(): # IRC -> HTML
 	def __init__(self, enabled):
 		self.enabled = enabled
 		tmp = namedtuple("StyleCombo", ["open", "close"])
@@ -90,6 +90,48 @@ class TextFormattingConverter(): # IRC -> HTML
 			ret += self.italics.close
 		return ret
 
+class TelegramFormattingConverter(): # Telegram -> IRC
+	def __init__(self, enabled, userfmt):
+		self.enabled = enabled
+		self.userfmt = userfmt
+	def convert(self, text, entities):
+		_filt = lambda text: text.replace("\n", " … ")
+		if not self.enabled or entities is None:
+			return _filt(text)
+		tpos = 0
+		ret = ""
+		while tpos < len(text):
+			e = [e for e in entities if e.offset==tpos]
+			assert(len(e) < 2)
+			if len(e) == 1:
+				e = e[0]
+				etext = _filt(text[tpos:tpos+e.length])
+				# TODO: should we handle "text_link"?
+				if e.type == "mention":
+					u = namedtuple("FakeUser", ["username", "first_name", "last_name"])(
+						username=etext[1:],
+						first_name=None,
+						last_name=None,
+					)
+					ret += "@" + self.userfmt(u)
+				elif e.type == "code" or e.type == "pre":
+					c = 15 # FIXME should be configurable
+					ret += "\x03%02d" % c + etext + "\x0f"
+				elif e.type == "bold":
+					ret += "\x02" + etext + "\x02"
+				elif e.type == "italic":
+					ret += "\x1d" + etext + "\x1d"
+				elif e.type == "text_mention":
+					ret += self.userfmt(e.user)
+				else: # unhandled: hashtag, bot_command, url, email
+					ret += etext
+				tpos += e.length
+				continue
+			# No entity / no special handling at this pos
+			ret += _filt(text[tpos])
+			tpos += 1
+		return ret
+
 LinkTuple = namedtuple("LinkTuple", ["telegram", "irc"])
 config_names = [
 	"telegram_bold_nicks",
@@ -117,7 +159,11 @@ class Bridge():
 		self.conf = namedtuple("Conf", config_names)(**config["options"])
 		#
 		self.nc = NickColorizer(self.conf.irc_nick_colors)
-		self.tf = TextFormattingConverter(self.conf.forward_text_formatting)
+		userfmt = lambda u: self.nc.colorize(self._tg_format_user(u))
+		self.tf = namedtuple("T", ["irc", "tg"])(
+			irc=IRCFormattingConverter(self.conf.forward_text_formatting),
+			tg=TelegramFormattingConverter(self.conf.forward_text_formatting, userfmt),
+		)
 
 		self.irc.event_handler("connected", self.irc_connected)
 		self._irc_event_handler("message", self.irc_message)
@@ -204,9 +250,10 @@ class Bridge():
 
 	def _tg_format_msg(self, event):
 		# TODO: move code for media messages here (for media in pinned messages)
+		pre = self._tg_format_msg_prefix(event) + " "
 		if event.content_type != "text":
-			return self._tg_format_msg_prefix(event) + " " + "(Media message)"
-		return self._tg_format_msg_prefix(event) + " " + event.text.replace("\n", " … ")
+			return pre + "(Media message)"
+		return pre + self.tf.tg.convert(event.text, event.entities)
 
 
 	def irc_connected(self):
@@ -219,7 +266,8 @@ class Bridge():
 			fmt = "&lt;<b>%s</b>&gt; %s"
 		else:
 			fmt = "&lt;%s&gt; %s"
-		self.tg.send_message(l.telegram, fmt % (event.nick, self.tf.convert(event.message)), parse_mode="HTML")
+		msg = fmt % (event.nick, self.tf.irc.convert(event.message))
+		self.tg.send_message(l.telegram, msg, parse_mode="HTML")
 
 	def irc_action(self, l, event):
 		logging.info("[IRC] %s in %s does action: %s", event.nick, event.channel, event.message)
@@ -227,7 +275,8 @@ class Bridge():
 			fmt = "* <b>%s</b> %s"
 		else:
 			fmt = "* %s %s"
-		self.tg.send_message(l.telegram, fmt % (event.nick, self.tf.convert(event.message)), parse_mode="HTML")
+		msg = fmt % (event.nick, self.tf.irc.convert(event.message))
+		self.tg.send_message(l.telegram, msg, parse_mode="HTML")
 
 	def irc_join(self, l, event):
 		logging.info("[IRC] %s joins %s", event.nick, event.channel)
@@ -264,6 +313,7 @@ class Bridge():
 	def tg_me(self, l, event):
 		if len(event.text.split(" ")) < 2:
 			return
+		# TODO consider supporting formatting here
 		atext = " ".join(event.text.split(" ")[1:])
 		logging.info("[TG] /me action: %s", atext)
 		self.irc.privmsg(l.irc, self._tg_format_msg_prefix(event, True) + " " + atext)
