@@ -21,7 +21,8 @@
 			"forward_sticker_emoji": false, // show emoji attached to sticker after (Sticker) tag
 			"forward_document_mime": true, // show (Document, video/mp4) instead of (Document)
 			"forward_audio_description": true, // show (Audio, 3m47s: Rebecca Black – Friday) instead of (Audio, 3m47s) if possible
-			"forward_text_formatting": false, // Forward bold and italics formatting (currently only IRC->Telegram)
+			"forward_text_formatting_irc": false, // Forward bold and italics formatting from IRC to Telegram
+			"forward_text_formatting_telegram": true, // Forward bold, italics, code, ... formatting from Telegram to IRC
 			"forward_joinleave_irc": false, // Forward joins/part from IRC to Telegram
 			"forward_joinleave_telegram": true // Forward added/removed users from Telegram to IRC
 		},

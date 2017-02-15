@@ -141,7 +141,8 @@ config_names = [
 	"forward_sticker_emoji",
 	"forward_document_mime",
 	"forward_audio_description",
-	"forward_text_formatting",
+	"forward_text_formatting_irc",
+	"forward_text_formatting_telegram",
 	"forward_joinleave_irc",
 	"forward_joinleave_telegram"
 ]
@@ -161,8 +162,8 @@ class Bridge():
 		self.nc = NickColorizer(self.conf.irc_nick_colors)
 		userfmt = lambda u: self.nc.colorize(self._tg_format_user(u))
 		self.tf = namedtuple("T", ["irc", "tg"])(
-			irc=IRCFormattingConverter(self.conf.forward_text_formatting),
-			tg=TelegramFormattingConverter(self.conf.forward_text_formatting, userfmt),
+			irc=IRCFormattingConverter(self.conf.forward_text_formatting_irc),
+			tg=TelegramFormattingConverter(self.conf.forward_text_formatting_telegram, userfmt),
 		)
 
 		self.irc.event_handler("connected", self.irc_connected)
