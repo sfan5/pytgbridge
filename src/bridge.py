@@ -24,7 +24,7 @@ def format_duration(d):
 class NickColorizer():
 	def __init__(self, config=None):
 		if config is None:
-			self.colors = [2, 3, 4, 7, 9, 10, 11, 12]
+			self.colors = [2, 3, 4, 6, 7, 8, 9, 10, 11, 12]
 		else:
 			self.colors = list(config)
 	@staticmethod
