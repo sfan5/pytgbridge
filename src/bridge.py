@@ -95,41 +95,51 @@ class TelegramFormattingConverter(): # Telegram -> IRC
 		self.enabled = enabled
 		self.userfmt = userfmt
 	def convert(self, text, entities):
+		_enc = "utf-16-le" # need to specify endianness to avoid a BOM
 		_filt = lambda text: text.replace("\n", " … ")
 		if not self.enabled or entities is None:
 			return _filt(text)
+		# Telegrams entities are positioned in units of UTF-16 code points
+		text = text.encode(_enc)
 		tpos = 0
 		ret = ""
 		while tpos < len(text):
-			e = [e for e in entities if e.offset==tpos]
-			assert(len(e) < 2)
-			if len(e) == 1:
-				e = e[0]
-				etext = _filt(text[tpos:tpos+e.length])
-				# TODO: should we handle "text_link"?
-				if e.type == "mention":
-					u = namedtuple("FakeUser", ["username", "first_name", "last_name"])(
-						username=etext[1:],
-						first_name=None,
-						last_name=None,
-					)
-					ret += "@" + self.userfmt(u)
-				elif e.type == "code" or e.type == "pre":
-					c = 15 # FIXME should be configurable
-					ret += "\x03%02d" % c + etext + "\x0f"
-				elif e.type == "bold":
-					ret += "\x02" + etext + "\x02"
-				elif e.type == "italic":
-					ret += "\x1d" + etext + "\x1d"
-				elif e.type == "text_mention":
-					ret += self.userfmt(e.user)
-				else: # unhandled: hashtag, bot_command, url, email
-					ret += etext
-				tpos += e.length
+			e = next((e for e in entities if e.offset >= (tpos>>1)), None)
+			if e is None:
+				# Ordinary text before end of msg
+				rtext = text[tpos:]
+			elif tpos < (e.offset<<1):
+				# Ordinary text before next entity
+				rtext = text[tpos:(e.offset<<1)]
+				e = None
+
+			if e is None:
+				# No entity / no special handling
+				ret += _filt(rtext.decode(_enc))
+				tpos += len(rtext)
 				continue
-			# No entity / no special handling at this pos
-			ret += _filt(text[tpos])
-			tpos += 1
+			# Handle entity
+			rlen = e.length << 1
+			etext = _filt(text[tpos:tpos+rlen].decode("utf16"))
+			if e.type == "mention":
+				u = namedtuple("FakeUser", ["username", "first_name", "last_name"])(
+					username=etext[1:],
+					first_name=None,
+					last_name=None,
+				)
+				ret += "@" + self.userfmt(u)
+			elif e.type == "code" or e.type == "pre":
+				c = 15 # FIXME should be configurable
+				ret += "\x03%02d" % c + etext + "\x0f"
+			elif e.type == "bold":
+				ret += "\x02" + etext + "\x02"
+			elif e.type == "italic":
+				ret += "\x1d" + etext + "\x1d"
+			elif e.type == "text_mention":
+				ret += self.userfmt(e.user)
+			else: # unhandled: hashtag, bot_command, url, email, text_link
+				ret += etext
+			tpos += rlen
 		return ret
 
 LinkTuple = namedtuple("LinkTuple", ["telegram", "irc"])
