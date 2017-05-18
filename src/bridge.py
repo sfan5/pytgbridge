@@ -175,6 +175,7 @@ class Bridge():
 			irc=IRCFormattingConverter(self.conf.forward_text_formatting_irc),
 			tg=TelegramFormattingConverter(self.conf.forward_text_formatting_telegram, userfmt),
 		)
+		self.file_number = 1 # Downside: can repeat if files are rare/you restart often
 
 		self.irc.event_handler("connected", self.irc_connected)
 		self._irc_event_handler("message", self.irc_message)
@@ -336,7 +337,7 @@ class Bridge():
 	def tg_media(self, l, event, media):
 		logging.info("[TG] media (%s)", media.type)
 		mediadesc = "(???)"
-		mediafilename = None # only needed if it differs from the default
+		mediaextension = None # only needed if it differs from the default
 		if media.type == "audio":
 			if media.desc is not None and self.conf.forward_audio_description:
 				mediadesc = "(Audio, %s: %s)" % (format_duration(media.duration), media.desc)
@@ -361,10 +362,13 @@ class Bridge():
 		elif media.type == "voice":
 			mediadesc = "(Voice, %s)" % format_duration(media.duration)
 			# use .ogg instead of .oga as browsers don't play it otherwise
-			tmp = self.tg.get_file_url(media.file_id).split("/")[-1]
-			if tmp.endswith(".oga"):
-				mediafilename = tmp[:-3] + "ogg"
+			if self.tg.get_file_url(media.file_id).endswith(".oga"):
+				mediaextension = "ogg"
 		#
+		if mediaextension is None:
+			mediaextension = self.tg.get_file_url(media.file_id).split(".")[-1]
+		mediafilename = "file_%d.%s" % (self.file_number, mediaextension)
+		self.file_number += 1
 		url = self.web.download_and_serve(self.tg.get_file_url(media.file_id), filename=mediafilename)
 		post = (" " + event.caption) if event.caption is not None else ""
 		post = post.replace("\n", " … ")
