@@ -7,12 +7,13 @@ mapped_content_type = {
 	"contact": "contact",
 	"game": "game",
 	"new_chat_member": "user_joined",
+	"new_chat_members": "", # TODO: implemented but undocumented, api docs say this will replace the type above
 	"left_chat_member": "user_left",
 	"group_chat_created": "", # can't occur because we're a bot
 	"supergroup_chat_created": "", # can't occur because we're a bot
 	"channel_chat_created": "", # can't occur because we're a bot
-	"migrate_to_chat_id": "", # FIXME: can we safely ignore these?
-	"migrate_from_chat_id": "", # FIXME: can we safely ignore these?
+	"migrate_to_chat_id": "",
+	"migrate_from_chat_id": "",
 }
 
 content_types_media = [
@@ -21,6 +22,7 @@ content_types_media = [
 	"photo",
 	"sticker",
 	"video",
+	"video_note",
 	"voice",
 ]
 
@@ -70,6 +72,10 @@ class TelegramMediaContainer():
 			c = orig.video
 			self.duration = c.duration
 			self.dimensions = (c.width, c.height)
+		elif self.type == "video_note":
+			c = orig.video_note
+			self.duration = c.duration
+			self.dimensions = c.length
 		elif self.type == "voice":
 			c = orig.voice
 			self.duration = c.duration

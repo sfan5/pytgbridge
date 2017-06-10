@@ -359,6 +359,8 @@ class Bridge():
 				mediadesc += " " + media.emoji
 		elif media.type == "video":
 			mediadesc = "(Video, %s)" % format_duration(media.duration)
+		elif media.type == "video_note":
+			mediadesc = "(Video Note, %s)" % format_duration(media.duration)
 		elif media.type == "voice":
 			mediadesc = "(Voice, %s)" % format_duration(media.duration)
 			# use .ogg instead of .oga as browsers don't play it otherwise
