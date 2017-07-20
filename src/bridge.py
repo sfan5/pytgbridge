@@ -190,7 +190,7 @@ class Bridge():
 		self._tg_event_handler("location", self.tg_location)
 		self._tg_event_handler("contact", self.tg_contact)
 		self._tg_event_handler("game", self.tg_game)
-		self._tg_event_handler("user_joined", self.tg_user_joined)
+		self._tg_event_handler("users_joined", self.tg_users_joined)
 		self._tg_event_handler("user_left", self.tg_user_left)
 		self._tg_event_handler("ctitle_changed", self.tg_ctitle_changed)
 		self._tg_event_handler("cphoto_changed", self.tg_cphoto_changed)
@@ -400,17 +400,18 @@ class Bridge():
 			gamedesc += ": " + event.game.description
 		self.irc.privmsg(l.irc, "%s (Game, %s)" % (self._tg_format_msg_prefix(event), gamedesc))
 
-	def tg_user_joined(self, l, event):
-		logging.info("[TG] user joined: %d", event.new_chat_member.id)
+	def tg_users_joined(self, l, event):
 		if not self.conf.forward_joinleave_telegram:
 			return
-		if event.from_user.id == event.new_chat_member.id:
-			self.irc.privmsg(l.irc, "%s has joined" % self.nc.colorize(self._tg_format_user(event.from_user)))
-		else:
-			self.irc.privmsg(l.irc, "%s was added by %s" % (
-				self.nc.colorize(self._tg_format_user(event.new_chat_member)),
-				self.nc.colorize(self._tg_format_user(event.from_user)),
-			))
+		for member in event.new_chat_members:
+			logging.info("[TG] user joined: %d", member.id)
+			if event.from_user.id == member.id:
+				self.irc.privmsg(l.irc, "%s has joined" % self.nc.colorize(self._tg_format_user(member)))
+			else:
+				self.irc.privmsg(l.irc, "%s was added by %s" % (
+					self.nc.colorize(self._tg_format_user(member)),
+					self.nc.colorize(self._tg_format_user(event.from_user)),
+				))
 
 	def tg_user_left(self, l, event):
 		logging.info("[TG] user left: %d", event.left_chat_member.id)
