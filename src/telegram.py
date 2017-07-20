@@ -179,6 +179,7 @@ class TelegramClient():
 			message.new_chat_members[i] = telebot.types.User.de_json(memb)
 		self._invoke_event_handler("users_joined", (message, ))
 
+
 	def send_message(self, chat_id, text, **kwargs):
 		self.bot.send_message(chat_id, text, **kwargs)
 
