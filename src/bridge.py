@@ -37,8 +37,10 @@ class NickColorizer():
 			state = (state + 0x79B99E37) & 0xffffffff
 			v += ((c >> 1) ^ c) + state
 		return v
+	def enabled(self):
+		return len(self.colors) != 0
 	def colorize(self, s):
-		if len(self.colors) == 0: # disabled
+		if not self.enabled(): # disabled
 			return s
 		color = NickColorizer._hash(s) % len(self.colors)
 		color = self.colors[color]
@@ -170,10 +172,9 @@ class Bridge():
 		self.conf = namedtuple("Conf", config_names)(**config["options"])
 		#
 		self.nc = NickColorizer(self.conf.irc_nick_colors)
-		userfmt = lambda u: self.nc.colorize(self._tg_format_user(u))
 		self.tf = namedtuple("T", ["irc", "tg"])(
 			irc=IRCFormattingConverter(self.conf.forward_text_formatting_irc),
-			tg=TelegramFormattingConverter(self.conf.forward_text_formatting_telegram, userfmt),
+			tg=TelegramFormattingConverter(self.conf.forward_text_formatting_telegram, self._tg_format_user),
 		)
 		self.file_number = 1 # Downside: can repeat if files are rare/you restart often
 
@@ -236,14 +237,17 @@ class Bridge():
 
 	def _tg_format_user(self, user):
 		if user.username is not None:
-			return user.username
+			return self.nc.colorize(user.username)
 		v1 = user.first_name
 		v2 = user.last_name
-		return ("" if v1 is None else v1) + " " + ("" if v2 is None else v2)
+		if v1 == "": # (can't be None)
+			italics = "\x1d" if self.nc.enabled() else ""
+			return italics + "Deleted Account" + italics
+		return self.nc.colorize( v1 + " " + ("" if v2 is None else v2) )
 
 	def _tg_format_msg_prefix(self, event, action=False):
 		fmt = "* %s" if action else "<%s>"
-		r = fmt % self.nc.colorize(self._tg_format_user(event.from_user))
+		r = fmt % self._tg_format_user(event.from_user)
 		if event.reply_to_message is not None and not action:
 			if event.reply_to_message.from_user.id == self.tg.get_own_user().id:
 				m = re.match(r"(?:<([^>]+)>|\* ([^ ]+)) ", event.reply_to_message.text or "")
@@ -253,9 +257,9 @@ class Bridge():
 				else:
 					logging.warning("Failed to parse our own message: %r", event.reply_to_message.text)
 			else:
-				r += " @%s," % self.nc.colorize(self._tg_format_user(event.reply_to_message.from_user))
+				r += " @%s," % self._tg_format_user(event.reply_to_message.from_user)
 		if event.forward_from is not None:
-			r += " Fwd from %s:" % self.nc.colorize(self._tg_format_user(event.forward_from))
+			r += " Fwd from %s:" % self._tg_format_user(event.forward_from)
 		elif event.forward_from_chat is not None:
 			r += " Fwd from %s:" % event.forward_from_chat.title
 		return r
@@ -406,11 +410,11 @@ class Bridge():
 		for member in event.new_chat_members:
 			logging.info("[TG] user joined: %d", member.id)
 			if event.from_user.id == member.id:
-				self.irc.privmsg(l.irc, "%s has joined" % self.nc.colorize(self._tg_format_user(member)))
+				self.irc.privmsg(l.irc, "%s has joined" % self._tg_format_user(member))
 			else:
 				self.irc.privmsg(l.irc, "%s was added by %s" % (
-					self.nc.colorize(self._tg_format_user(member)),
-					self.nc.colorize(self._tg_format_user(event.from_user)),
+					self._tg_format_user(member),
+					self._tg_format_user(event.from_user),
 				))
 
 	def tg_user_left(self, l, event):
@@ -418,17 +422,17 @@ class Bridge():
 		if not self.conf.forward_joinleave_telegram:
 			return
 		if event.from_user.id == event.left_chat_member.id:
-			self.irc.privmsg(l.irc, "%s has left" % self.nc.colorize(self._tg_format_user(event.from_user)))
+			self.irc.privmsg(l.irc, "%s has left" % self._tg_format_user(event.from_user))
 		else:
 			self.irc.privmsg(l.irc, "%s was removed by %s" % (
-				self.nc.colorize(self._tg_format_user(event.left_chat_member)),
-				self.nc.colorize(self._tg_format_user(event.from_user)),
+				self._tg_format_user(event.left_chat_member),
+				self._tg_format_user(event.from_user),
 			))
 
 	def tg_ctitle_changed(self, l, event):
 		logging.info("[TG] chat title changed: %s", event.new_chat_title)
 		self.irc.privmsg(l.irc, "%s set a new chat title: %s" % (
-			self.nc.colorize(self._tg_format_user(event.from_user)),
+			self._tg_format_user(event.from_user),
 			event.new_chat_title,
 		))
 
@@ -436,20 +440,20 @@ class Bridge():
 		logging.info("[TG] chat photo changed")
 		url = self.web.download_and_serve(self.tg.get_file_url(media.file_id))
 		self.irc.privmsg(l.irc, "%s set a new chat photo (%dx%d): %s" % (
-			self.nc.colorize(self._tg_format_user(event.from_user)),
+			self._tg_format_user(event.from_user),
 			media.dimensions[0], media.dimensions[1], url
 		))
 
 	def tg_cphoto_deleted(self, l, event):
 		logging.info("[TG] chat photo deleted")
 		self.irc.privmsg(l.irc, "%s deleted the chat photo" % (
-			self.nc.colorize(self._tg_format_user(event.from_user)),
+			self._tg_format_user(event.from_user),
 		))
 
 	def tg_cpinned_changed(self, l, event):
 		logging.info("[TG] pinned message changed")
 		self.irc.privmsg(l.irc, "%s pinned message: %s" % (
-			self.nc.colorize(self._tg_format_user(event.from_user)),
+			self._tg_format_user(event.from_user),
 			self._tg_format_msg(event.pinned_message),
 		))
 
