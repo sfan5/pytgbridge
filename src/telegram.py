@@ -1,5 +1,6 @@
 import telebot
 import logging
+import time
 
 mapped_content_type = {
 	"text": "text",
@@ -114,6 +115,7 @@ class TelegramClient():
 				self.bot.polling()
 			except Exception as e:
 				logging.warning("%s while polling Telegram, retrying", type(e).__name__)
+				time.sleep(1)
 
 	def event_handler(self, name, func):
 		self.event_handlers[name] = func
