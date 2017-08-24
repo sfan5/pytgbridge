@@ -7,7 +7,7 @@ mapped_content_type = {
 	"location": "location",
 	"contact": "contact",
 	"game": "game",
-	"new_chat_members": "", # handled manually
+	"new_chat_members": "users_joined",
 	"left_chat_member": "user_left",
 	"group_chat_created": "", # can't occur because we're a bot
 	"supergroup_chat_created": "", # can't occur because we're a bot
@@ -105,7 +105,6 @@ class TelegramClient():
 		for k in content_types_media:
 			self._telebot_event_handler(self.on_media, content_types=[k])
 		self._telebot_event_handler(self.on_content_type_none, content_types=[None])
-		self._telebot_event_handler(self.on_new_chat_members, content_types=["new_chat_members"])
 
 	def run(self):
 		self.own_user = self.bot.get_me()
@@ -175,11 +174,6 @@ class TelegramClient():
 			self._invoke_event_handler("cphoto_deleted", (message, ))
 		elif message.pinned_message is not None:
 			self._invoke_event_handler("cpinned_changed", (message, ))
-
-	def on_new_chat_members(self, message):
-		for i, memb in enumerate(message.new_chat_members): # umm?
-			message.new_chat_members[i] = telebot.types.User.de_json(memb)
-		self._invoke_event_handler("users_joined", (message, ))
 
 
 	def send_message(self, chat_id, text, **kwargs):
