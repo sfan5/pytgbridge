@@ -26,8 +26,6 @@ content_types_media = [
 	"voice",
 ]
 
-telebot.logger.setLevel(logging.WARNING) # make telebot shut up a little
-
 def ostr(obj):
 	if obj is None:
 		return ""
@@ -109,12 +107,7 @@ class TelegramClient():
 	def run(self):
 		self.own_user = self.bot.get_me()
 		logging.info("Polling for Telegram events")
-		while True:
-			try:
-				self.bot.polling()
-			except Exception as e:
-				logging.warning("%s while polling Telegram, retrying", type(e).__name__)
-				time.sleep(1)
+		self.bot.polling(none_stop=True)
 
 	def event_handler(self, name, func):
 		self.event_handlers[name] = func
