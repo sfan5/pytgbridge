@@ -89,7 +89,7 @@ class TelegramClient():
 			logging.error("No telegram token specified, exiting")
 			exit(1)
 		self.token = config["token"]
-		self.bot = telebot.TeleBot(self.token)
+		self.bot = telebot.TeleBot(self.token, threaded=False)
 		self.event_handlers = {}
 		self.own_user = None
 
@@ -107,7 +107,13 @@ class TelegramClient():
 	def run(self):
 		self.own_user = self.bot.get_me()
 		logging.info("Polling for Telegram events")
-		self.bot.polling(none_stop=True)
+		while True:
+			try:
+				self.bot.polling(none_stop=True)
+			except Exception as e:
+				# you're not supposed to call .polling() more than once but i'm left with no choice
+				logging.warning("%s while polling Telegram, retrying", type(e).__name__)
+				time.sleep(1)
 
 	def event_handler(self, name, func):
 		self.event_handlers[name] = func
