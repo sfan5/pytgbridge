@@ -243,7 +243,7 @@ class Bridge():
 		if v1 == "": # (can't be None)
 			italics = "\x1d" if self.nc.enabled() else ""
 			return italics + "Deleted Account" + italics
-		return self.nc.colorize( v1 + " " + ("" if v2 is None else v2) )
+		return self.nc.colorize( v1 + ("" if v2 is None else " " + v2) )
 
 	def _tg_format_msg_prefix(self, event, action=False):
 		fmt = "* %s" if action else "<%s>"
