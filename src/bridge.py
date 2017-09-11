@@ -359,7 +359,7 @@ class Bridge():
 				mediadesc = "(Sticker, %dx%d)" % media.dimensions
 			else:
 				mediadesc = "(Sticker)"
-			if self.conf.forward_sticker_emoji:
+			if self.conf.forward_sticker_emoji and media.emoji is not None:
 				mediadesc += " " + media.emoji
 		elif media.type == "video":
 			mediadesc = "(Video, %s)" % format_duration(media.duration)
