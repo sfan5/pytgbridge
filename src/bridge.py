@@ -361,6 +361,7 @@ class Bridge():
 				mediadesc = "(Sticker)"
 			if self.conf.forward_sticker_emoji and media.emoji is not None:
 				mediadesc += " " + media.emoji
+			mediaextension = "webp" # force ext in case none is available
 		elif media.type == "video":
 			mediadesc = "(Video, %s)" % format_duration(media.duration)
 		elif media.type == "video_note":
@@ -371,6 +372,8 @@ class Bridge():
 		#
 		if mediaextension is None:
 			mediaextension = self.tg.get_file_url(media.file_id).split(".")[-1]
+			if "/" in mediaextension:
+				raise Exception("media of type '%s' did not have file extension!" % media.type)
 		mediafilename = "file_%d.%s" % (self.file_number, mediaextension)
 		self.file_number += 1
 		url = self.web.download_and_serve(self.tg.get_file_url(media.file_id), filename=mediafilename)
