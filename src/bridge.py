@@ -367,9 +367,7 @@ class Bridge():
 			mediadesc = "(Video Note, %s)" % format_duration(media.duration)
 		elif media.type == "voice":
 			mediadesc = "(Voice, %s)" % format_duration(media.duration)
-			# use .ogg instead of .oga as browsers don't play it otherwise
-			if self.tg.get_file_url(media.file_id).endswith(".oga"):
-				mediaextension = "ogg"
+			mediaextension = {"audio/ogg": "ogg", "audio/mp3": "mp3"}[media.mime]
 		#
 		if mediaextension is None:
 			mediaextension = self.tg.get_file_url(media.file_id).split(".")[-1]

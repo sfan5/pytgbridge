@@ -77,6 +77,7 @@ class TelegramMediaContainer():
 		elif self.type == "voice":
 			c = orig.voice
 			self.duration = c.duration
+			self.mime = c.mime_type
 		else:
 			raise NotImplementedException("content type not supported")
 
