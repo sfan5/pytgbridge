@@ -26,10 +26,22 @@ content_types_media = [
 	"voice",
 ]
 
+mime_mapping = { # mime type -> file extension
+	"audio/ogg": "ogg",
+	"audio/x-vorbis+ogg": "ogg",
+	"audio/x-opus+ogg": "ogg",
+	"audio/mp4": "m4a",
+	"audio/mpeg": "mp3",
+	"audio/flac": "flac",
+
+	"video/mp4": "mp4",
+
+	"image/jpg": "jpg",
+	"image/webp": "webp",
+}
+
 def ostr(obj):
-	if obj is None:
-		return ""
-	return obj
+	return obj or ""
 
 class TelegramMediaContainer():
 	def __init__(self, orig, init_from="event"):
@@ -39,6 +51,7 @@ class TelegramMediaContainer():
 			self.dimensions = (c.width, c.height)
 			self.file_id = c.file_id
 			self.file_size = c.file_size
+			self.extension = mime_mapping["image/jpg"]
 			return
 		elif init_from == "event":
 			pass # see below
@@ -46,6 +59,7 @@ class TelegramMediaContainer():
 			raise NotImplementedException("???")
 
 		self.type = orig.content_type
+		mime = None
 		if self.type == "audio":
 			c = orig.audio
 			self.mime = c.mime_type
@@ -56,33 +70,41 @@ class TelegramMediaContainer():
 				self.desc = ostr(c.performer) + ostr(c.title)
 			else:
 				self.desc = "%s – %s" % (c.performer, c.title)
+			mime = c.mime_type
 		elif self.type == "document":
 			c = orig.document
 			self.mime = c.mime_type
 		elif self.type == "photo":
 			c = sorted(orig.photo, key=lambda e: e.width*e.height, reverse=True)[0]
 			self.dimensions = (c.width, c.height)
+			mime = "image/jpg"
 		elif self.type == "sticker":
 			c = orig.sticker
 			self.emoji = c.emoji
 			self.dimensions = (c.width, c.height)
+			mime = "image/webp"
 		elif self.type == "video":
 			c = orig.video
 			self.duration = c.duration
 			self.dimensions = (c.width, c.height)
+			mime = c.mime_type
 		elif self.type == "video_note":
 			c = orig.video_note
 			self.duration = c.duration
 			self.dimensions = c.length
+			mime = "video/mp4" # no specified mime because ????
 		elif self.type == "voice":
 			c = orig.voice
 			self.duration = c.duration
-			self.mime = c.mime_type
+			self.mime = mime = c.mime_type
 		else:
 			raise NotImplementedException("content type not supported")
 
 		self.file_id = c.file_id
 		self.file_size = c.file_size
+		self.extension = mime_mapping.get(mime, "bin") if mime is not None else None
+		if self.extension == "bin":
+			logging.warning("MIME type '%s' wasn't found in mapping", mime)
 
 class TelegramClient():
 	def __init__(self, config):

@@ -341,7 +341,7 @@ class Bridge():
 	def tg_media(self, l, event, media):
 		logging.info("[TG] media (%s)", media.type)
 		mediadesc = "(???)"
-		mediaextension = None # only needed if it differs from the default
+		mediaext = media.extension
 		if media.type == "audio":
 			if media.desc is not None and self.conf.forward_audio_description:
 				mediadesc = "(Audio, %s: %s)" % (format_duration(media.duration), media.desc)
@@ -352,6 +352,9 @@ class Bridge():
 				mediadesc = "(Document, %s)" % media.mime
 			else:
 				mediadesc = "(Document)"
+			# let's hope telegram does not remove these too...
+			mediaext = self.tg.get_file_url(media.file_id).split(".")[-1]
+			assert "/" not in mediaext
 		elif media.type == "photo":
 			mediadesc = "(Photo, %dx%d)" % media.dimensions
 		elif media.type == "sticker":
@@ -361,20 +364,14 @@ class Bridge():
 				mediadesc = "(Sticker)"
 			if self.conf.forward_sticker_emoji and media.emoji is not None:
 				mediadesc += " " + media.emoji
-			mediaextension = "webp" # force ext in case none is available
 		elif media.type == "video":
 			mediadesc = "(Video, %s)" % format_duration(media.duration)
 		elif media.type == "video_note":
 			mediadesc = "(Video Note, %s)" % format_duration(media.duration)
 		elif media.type == "voice":
 			mediadesc = "(Voice, %s)" % format_duration(media.duration)
-			mediaextension = {"audio/ogg": "ogg", "audio/mp3": "mp3"}[media.mime]
 		#
-		if mediaextension is None:
-			mediaextension = self.tg.get_file_url(media.file_id).split(".")[-1]
-			if "/" in mediaextension:
-				raise Exception("media of type '%s' did not have file extension!" % media.type)
-		mediafilename = "file_%d.%s" % (self.file_number, mediaextension)
+		mediafilename = "file_%d.%s" % (self.file_number, mediaext)
 		self.file_number += 1
 		url = self.web.download_and_serve(self.tg.get_file_url(media.file_id), filename=mediafilename)
 		post = (" " + event.caption) if event.caption is not None else ""
