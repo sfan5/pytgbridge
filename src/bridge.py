@@ -348,7 +348,9 @@ class Bridge():
 			else:
 				mediadesc = "(Audio, %s)" % format_duration(media.duration)
 		elif media.type == "document":
-			if self.conf.forward_document_mime:
+			if media.mime == "video/mp4" or media.mime == "image/gif":
+				mediadesc = "(GIF)"
+			elif self.conf.forward_document_mime:
 				mediadesc = "(Document, %s)" % media.mime
 			else:
 				mediadesc = "(Document)"
