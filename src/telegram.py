@@ -74,6 +74,7 @@ class TelegramMediaContainer():
 		elif self.type == "document":
 			c = orig.document
 			self.mime = c.mime_type
+			self.filename = c.file_name
 		elif self.type == "photo":
 			c = sorted(orig.photo, key=lambda e: e.width*e.height, reverse=True)[0]
 			self.dimensions = (c.width, c.height)

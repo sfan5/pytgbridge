@@ -354,9 +354,7 @@ class Bridge():
 				mediadesc = "(Document, %s)" % media.mime
 			else:
 				mediadesc = "(Document)"
-			# let's hope telegram does not remove these too...
-			mediaext = self.tg.get_file_url(media.file_id).split(".")[-1]
-			assert "/" not in mediaext
+			mediaext = media.filename.split(".")[-1]
 		elif media.type == "photo":
 			mediadesc = "(Photo, %dx%d)" % media.dimensions
 		elif media.type == "sticker":
