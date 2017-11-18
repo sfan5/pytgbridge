@@ -5,6 +5,7 @@ import time
 mapped_content_type = {
 	"text": "text",
 	"location": "location",
+	"venue": "venue",
 	"contact": "contact",
 	"game": "game",
 	"new_chat_members": "users_joined",

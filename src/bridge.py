@@ -189,6 +189,7 @@ class Bridge():
 		self._tg_event_handler("text", self.tg_text)
 		self._tg_event_handler("media", self.tg_media)
 		self._tg_event_handler("location", self.tg_location)
+		self._tg_event_handler("venue", self.tg_venue)
 		self._tg_event_handler("contact", self.tg_contact)
 		self._tg_event_handler("game", self.tg_game)
 		self._tg_event_handler("users_joined", self.tg_users_joined)
@@ -385,6 +386,18 @@ class Bridge():
 			self._tg_format_msg_prefix(event),
 			event.location.longitude,
 			event.location.latitude,
+		))
+
+	def tg_venue(self, l, event):
+		logging.info("[TG] venue")
+		url = ""
+		if event.venue.foursquare_id is not None:
+			url = ", http://foursquare.com/v/" + event.venue.foursquare_id
+		self.irc.privmsg(l.irc, "%s (Venue, %s: %s%s)" % (
+			self._tg_format_msg_prefix(event),
+			event.venue.title,
+			event.venue.address,
+			url
 		))
 
 	def tg_contact(self, l, event):
