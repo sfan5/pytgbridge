@@ -384,8 +384,8 @@ class Bridge():
 		logging.info("[TG] location")
 		self.irc.privmsg(l.irc, "%s (Location, lat: %.4f, lon: %.4f)" % (
 			self._tg_format_msg_prefix(event),
-			event.location.longitude,
 			event.location.latitude,
+			event.location.longitude,
 		))
 
 	def tg_venue(self, l, event):
