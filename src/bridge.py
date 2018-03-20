@@ -349,13 +349,15 @@ class Bridge():
 			else:
 				mediadesc = "(Audio, %s)" % format_duration(media.duration)
 		elif media.type == "document":
-			if media.mime == "video/mp4" or media.mime == "image/gif":
+			if media.mime in ("video/mp4", "image/gif"):
 				mediadesc = "(GIF)"
+				mediaext = {"video/mp4": "mp4", "image/gif": "gif"}[media.mime]
 			elif self.conf.forward_document_mime:
 				mediadesc = "(Document, %s)" % media.mime
 			else:
 				mediadesc = "(Document)"
-			mediaext = media.filename.split(".")[-1]
+			if mediaext is None:
+				mediaext = media.filename.split(".")[-1]
 		elif media.type == "photo":
 			mediadesc = "(Photo, %dx%d)" % media.dimensions
 		elif media.type == "sticker":
