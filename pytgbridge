@@ -61,12 +61,12 @@ def main(configpath, loglevel=logging.INFO):
 
 if __name__ == "__main__":
 	try:
-		opts, args = getopt.getopt(sys.argv[1:], "hqc:D")
+		opts, args = getopt.getopt(sys.argv[1:], "hqc:D", ["help"])
 	except getopt.GetoptError as e:
 		print(str(e))
 		exit(1)
 	# Process command line args
-	if readopt("-h") is not None:
+	if readopt("-h") is not None or readopt("--help") is not None:
 		usage()
 		exit(0)
 	loglevel = logging.INFO if readopt("-q") is None else logging.WARNING
