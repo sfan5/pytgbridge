@@ -10,11 +10,14 @@ mapped_content_type = {
 	"game": "game",
 	"new_chat_members": "users_joined",
 	"left_chat_member": "user_left",
+	"new_chat_title": "ctitle_changed",
+	"delete_chat_photo": "cphoto_deleted",
 	"group_chat_created": "", # can't occur because we're a bot
 	"supergroup_chat_created": "", # can't occur because we're a bot
 	"channel_chat_created": "", # can't occur because we're a bot
 	"migrate_to_chat_id": "",
 	"migrate_from_chat_id": "",
+	"pinned_message": "cpinned_changed",
 }
 
 content_types_media = [
@@ -128,7 +131,7 @@ class TelegramClient():
 			self._telebot_event_handler_passthrough(v, content_types=[k])
 		for k in content_types_media:
 			self._telebot_event_handler(self.on_media, content_types=[k])
-		self._telebot_event_handler(self.on_content_type_none, content_types=[None])
+		self._telebot_event_handler(self.on_new_chat_photo, content_types=["new_chat_photo"])
 
 	def run(self):
 		self.own_user = self.bot.get_me()
@@ -188,17 +191,9 @@ class TelegramClient():
 	def on_media(self, message):
 		self._invoke_event_handler("media", (message, TelegramMediaContainer(message)))
 
-	def on_content_type_none(self, message):
-		# new_chat_title, new_chat_photo, delete_chat_photo and pinned_message belong here
-		if message.new_chat_title is not None:
-			self._invoke_event_handler("ctitle_changed", (message, ))
-		elif message.new_chat_photo is not None:
-			media = TelegramMediaContainer(message.new_chat_photo, init_from="photo_list")
-			self._invoke_event_handler("cphoto_changed", (message, media))
-		elif message.delete_chat_photo:
-			self._invoke_event_handler("cphoto_deleted", (message, ))
-		elif message.pinned_message is not None:
-			self._invoke_event_handler("cpinned_changed", (message, ))
+	def on_new_chat_photo(self, message):
+		media = TelegramMediaContainer(message.new_chat_photo, init_from="photo_list")
+		self._invoke_event_handler("cphoto_changed", (message, media))
 
 
 	def send_message(self, chat_id, text, **kwargs):

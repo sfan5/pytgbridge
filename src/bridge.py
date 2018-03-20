@@ -450,7 +450,9 @@ class Bridge():
 
 	def tg_cphoto_changed(self, l, event, media):
 		logging.info("[TG] chat photo changed")
-		url = self.web.download_and_serve(self.tg.get_file_url(media.file_id))
+		mediafilename = "file_%d.%s" % (self.file_number, media.extension)
+		self.file_number += 1
+		url = self.web.download_and_serve(self.tg.get_file_url(media.file_id), filename=mediafilename)
 		self.irc.privmsg(l.irc, "%s set a new chat photo (%dx%d): %s" % (
 			self._tg_format_user(event.from_user),
 			media.dimensions[0], media.dimensions[1], url

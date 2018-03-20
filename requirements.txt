@@ -1,2 +1,2 @@
-pyTelegramBotAPI>=3.2.0
+pyTelegramBotAPI>=3.5.1
 irc>=15.0.5
