@@ -1,5 +1,5 @@
 {
-	// NOTE THAT YOU NEED TO REMOVE ALL COMMENTS FROM THIS FILE PRIOR TO RUNNING
+	// Note: While standard JSON does not support comments, pytgbridge strips these before parsing
 	// optional settings are commented out
 
 	"telegram": {

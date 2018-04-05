@@ -24,6 +24,34 @@ def readopt(name):
 			return e[1]
 	return None
 
+def strip_comment(line):
+	# why yes this code is unreadable on purpose
+	inside_str, escape, slashes = (False, False, 0)
+	ret = ""
+	for c in line:
+		if not inside_str:
+			inside_str = (c == '"')
+			slashes += 1 if c == "/" else (-slashes)
+			if slashes == 2:
+				return ret[:-1]
+		else:
+			inside_str = (c != '"') or escape
+			escape = not escape and (c == "\\")
+		ret += c
+	return ret
+
+def parse_config(configpath):
+	configstr = ""
+	with open(configpath, "r") as f:
+		for line in f:
+			line = line.rstrip("\r\n")
+			configstr += strip_comment(line) + "\n"
+	try:
+		return json.loads(configstr)
+	except json.JSONDecodeError as e :
+		logging.error("Couldn't parse configuration file:\n" + str(e))
+		exit(1)
+
 def usage():
 	print("Usage: %s [-q] [-c file.json] [-D]" % sys.argv[0])
 	print("Options:")
@@ -32,12 +60,7 @@ def usage():
 	print("  -D    Fork into background")
 
 def main(configpath, loglevel=logging.INFO):
-	with open(configpath, "r") as f:
-		try:
-			config = json.load(f)
-		except json.JSONDecodeError:
-			logging.error("Couldn't parse configuration file")
-			exit(1)
+	config = parse_config(configpath)
 
 	logging.basicConfig(format="[%(asctime)s] %(message)s", datefmt="%Y-%m-%d %H:%M:%S", level=loglevel)
 	logging.info("Starting up...")
