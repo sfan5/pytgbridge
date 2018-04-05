@@ -81,9 +81,13 @@ class IRCClient():
 			exit(1)
 		args["ipv6"] = args["ipv6"] and ai[0][0] == socket.AF_INET6 # this determines the socket type used
 		host = ai[0][4][0]
+		if "password" in config.keys():
+			serv = (host, config["port"], config["password"])
+		else:
+			serv = (host, config["port"])
 		# Actually create bot with correct params
 		kwargs = {"connect_factory": irc.connection.Factory(**args)}
-		args = [[(host, config["port"])], config["nick"], "pytgbridge (IRC)"]
+		args = [[serv], config["nick"], "pytgbridge (IRC)"]
 		ns_password = None if "nickpassword" not in config.keys() else config["nickpassword"]
 		self.bot = IRCBot(args, kwargs, ns_password=ns_password)
 	def run(self):
