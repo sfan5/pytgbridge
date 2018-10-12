@@ -1,9 +1,10 @@
 {
-	// Note: While standard JSON does not support comments, pytgbridge strips these before parsing
+	// Note: This file is parsed according to the JSON5 <https://json5.org/> standard,
+	//       e.g. comments and trailing commas are allowed here.
 	// optional settings are commented out
 
 	"telegram": {
-		"token": "123456:BOT-TOKEN-HERE"
+		"token": "123456:BOT-TOKEN-HERE",
 	},
 	"irc": {
 		"server": "irc.freenode.net",
@@ -12,7 +13,7 @@
 		//"ipv6": true, // control usage of IPv6 (defaults to true)
 		"nick": "tg_bridge",
 		//"password": "12345", // server password
-		//"nickpassword": "s3cret" // NickServ password
+		//"nickpassword": "s3cret", // NickServ password
 	},
 	"bridge": {
 		"options": {
@@ -25,26 +26,27 @@
 			"forward_text_formatting_irc": false, // Forward bold and italics formatting from IRC to Telegram
 			"forward_text_formatting_telegram": true, // Forward bold, italics, code, ... formatting from Telegram to IRC
 			"forward_joinleave_irc": false, // Forward joins/part from IRC to Telegram
-			"forward_joinleave_telegram": true // Forward added/removed users from Telegram to IRC
+			"forward_joinleave_telegram": true, // Forward added/removed users from Telegram to IRC
 		},
 		"links": [
 			// find out the telegram id by adding the bot to a channel and looking at the log
 			{"telegram": -123455465, "irc": "#irc_channel"},
-			{"telegram": 323443454, "irc": "#irc_channel2"}
+			{"telegram": 323443454, "irc": "#irc_channel2"},
 		]
 	},
 	"web_backend": {
 		"type": "external", // stub, builtin or external
 
+		// PICK THE SECTION MATCHING YOUR web_backend AND COMMENT OUT THE OTHER
 		// options for builtin:
 		//"bind": "44.32.11.0", // host to bind to (defaults to 127.0.0.1)
 		//"external": "myself.dyndns.org", // force differing IP/domain for URLs
 		"port": 8081, // port to bind to
-		"use_subdirs": true // whether to spread files to 26 subdirs
+		"use_subdirs": true, // whether to spread files over 26 subdirs
 
 		// options for external:
 		"webpath": "/var/www/tg", // where to write files
-		"baseurl": "http://yourname.me/tg", // external URL of that folder
-		"use_subdirs": true // whether to spread files to 26 subdirs
+		"baseurl": "https://yourname.me/tg", // external URL of that folder
+		"use_subdirs": true, // whether to spread files over 26 subdirs
 	}
 }
