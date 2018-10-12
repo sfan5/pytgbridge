@@ -1,6 +1,8 @@
 import os
 import urllib
 import logging
+import time
+import uuid
 # for built-in HTTP server:
 import threading
 import tempfile
@@ -29,6 +31,9 @@ def download_file(url, f):
 	fdcopy(r, f)
 	r.close()
 
+def millitime():
+	return int(time.time() * 1000)
+
 class WebBackend():
 	def __init__(self, config):
 		self.type = config["type"]
@@ -48,8 +53,17 @@ class WebBackend():
 			t.start()
 		elif self.type == "stub":
 			logging.warning("Web backend not functional! (stub)")
+			return
 		else:
 			logging.error("Unknown web backend type")
+			exit(1)
+		self.f_mode = config["filename_mode"]
+		if self.f_mode == "counter":
+			self.f_number = 1
+		elif self.f_mode in ("timestamp", "uuid"):
+			pass
+		else:
+			logging.error("Unknown filename generation mode")
 			exit(1)
 
 	@staticmethod
@@ -72,10 +86,22 @@ class WebBackend():
 			pass
 		return h + "/" + filename
 
+	def generate_filename(self, extension=None):
+		suff = extension and ("." + extension) or ""
+		if self.f_mode == "counter":
+			self.f_number += 1
+			return "file_%d%s" % (self.f_number - 1, suff)
+		elif self.f_mode == "timestamp":
+			return "%d%s" % (millitime(), suff)
+		elif self.f_mode == "uuid":
+			return "%s%s" % (uuid.uuid4(), suff)
+
 	def download_and_serve(self, url, filename=None):
 		if self.type == "stub":
 			return "<no link available>"
-		filepath = self._filepath(url.split("/")[-1] if filename is None else filename)
+		if filename is None:
+			filename = url.split("/")[-1]
+		filepath = self._filepath(filename)
 		with open(self.webpath + "/" + filepath, "wb") as f:
 			download_file(url, f)
 		return self.baseurl + "/" + filepath

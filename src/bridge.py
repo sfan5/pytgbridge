@@ -176,7 +176,6 @@ class Bridge():
 			irc=IRCFormattingConverter(self.conf.forward_text_formatting_irc),
 			tg=TelegramFormattingConverter(self.conf.forward_text_formatting_telegram, self._tg_format_user),
 		)
-		self.file_number = 1 # Downside: can repeat if files are rare/you restart often
 
 		self.irc.event_handler("connected", self.irc_connected)
 		self._irc_event_handler("message", self.irc_message)
@@ -374,8 +373,7 @@ class Bridge():
 		elif media.type == "voice":
 			mediadesc = "(Voice, %s)" % format_duration(media.duration)
 		#
-		mediafilename = "file_%d.%s" % (self.file_number, mediaext)
-		self.file_number += 1
+		mediafilename = self.web.generate_filename(mediaext)
 		url = self.web.download_and_serve(self.tg.get_file_url(media.file_id), filename=mediafilename)
 		post = ""
 		if event.caption is not None:
@@ -452,8 +450,7 @@ class Bridge():
 
 	def tg_cphoto_changed(self, l, event, media):
 		logging.info("[TG] chat photo changed")
-		mediafilename = "file_%d.%s" % (self.file_number, media.extension)
-		self.file_number += 1
+		mediafilename = self.web.generate_filename(media.extension)
 		url = self.web.download_and_serve(self.tg.get_file_url(media.file_id), filename=mediafilename)
 		self.irc.privmsg(l.irc, "%s set a new chat photo (%dx%d): %s" % (
 			self._tg_format_user(event.from_user),
