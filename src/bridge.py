@@ -43,7 +43,7 @@ class NickColorizer():
 	def colorize(self, s):
 		if not self.enabled(): # disabled
 			return s
-		color = NickColorizer._hash(s) % len(self.colors)
+		color = NickColorizer._hash(s.lower()) % len(self.colors)
 		color = self.colors[color]
 		return "\x03%02d%s\x0f" % (color, s)
 
