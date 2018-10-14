@@ -1,6 +1,7 @@
 import re
 import logging
 from collections import namedtuple
+from src.web_backend import WebpConverter
 
 def dump(obj, name=None, r=False): ##DEBUG##
 	name = "" if name is None else (name + ".")
@@ -148,6 +149,7 @@ LinkTuple = namedtuple("LinkTuple", ["telegram", "irc"])
 config_names = [
 	"telegram_bold_nicks",
 	"irc_nick_colors",
+	"convert_webp_stickers",
 
 	"forward_sticker_dimensions",
 	"forward_sticker_emoji",
@@ -170,6 +172,8 @@ class Bridge():
 		if "irc_nick_colors" not in config["options"].keys():
 			config["options"]["irc_nick_colors"] = None # use default
 		self.conf = namedtuple("Conf", config_names)(**config["options"])
+		if self.conf.convert_webp_stickers:
+			WebpConverter.check()
 		#
 		self.nc = NickColorizer(self.conf.irc_nick_colors)
 		self.tf = namedtuple("T", ["irc", "tg"])(
@@ -374,7 +378,10 @@ class Bridge():
 			mediadesc = "(Voice, %s)" % format_duration(media.duration)
 		#
 		remote = self.tg.get_file_url(media.file_id)
-		url = self.web.download_and_serve(remote, extension=mediaext)
+		if self.conf.convert_webp_stickers and media.type == "sticker":
+			url = self.web.download_and_serve(remote, extension=mediaext, hook=WebpConverter.hook)
+		else:
+			url = self.web.download_and_serve(remote, extension=mediaext)
 		post = ""
 		if event.caption is not None:
 			post = " " + self.tf.tg.convert(event.caption, event.caption_entities)

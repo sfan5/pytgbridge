@@ -19,6 +19,8 @@
 		options: {
 			"telegram_bold_nicks": true, // make nicks bold in telegram
 			//"irc_nick_colors": [2, 4, 12], // custom color set for nick colorization on IRC, use [] to disable
+			"convert_webp_stickers": false, // convert WebP stickers to PNG
+
 			"forward_sticker_dimensions": false, // show (Sticker, 512x512) instead of (Sticker)
 			"forward_sticker_emoji": false, // show emoji attached to sticker after (Sticker) tag
 			"forward_document_mime": true, // show (Document, video/mp4) instead of (Document)

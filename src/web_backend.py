@@ -8,6 +8,8 @@ import threading
 import tempfile
 import http.server
 import socketserver
+# for WebpConverter:
+import subprocess
 
 def http_server_thread(host, port, wwwpath):
 	os.chdir(wwwpath)
@@ -93,7 +95,7 @@ class WebBackend():
 		elif self.f_mode == "uuid":
 			return "%s%s" % (uuid.uuid4(), suff)
 
-	def download_and_serve(self, url, filename=None, extension=None):
+	def download_and_serve(self, url, filename=None, extension=None, hook=None):
 		if self.type == "stub":
 			return "<no link available>"
 		if filename is None:
@@ -104,5 +106,23 @@ class WebBackend():
 		filepath = self._filepath(filename)
 		with open(self.webpath + "/" + filepath, "wb") as f:
 			download_file(url, f)
+
+		if hook is not None:
+			filepath = hook(filepath, self.webpath)
 		return self.baseurl + "/" + filepath
 
+class WebpConverter():
+	@staticmethod
+	def check():
+		ret = subprocess.call(["dwebp", "-version"], stdout=subprocess.DEVNULL)
+		if ret != 0:
+			logging.error("The WebP command line tools need to be installed to use this feature (try: apt install webp)")
+			exit(1)
+	@staticmethod
+	def hook(filepath, basedir):
+		if not filepath.endswith(".webp"):
+			return
+		newpath = filepath[:-4] + "png"
+		subprocess.check_call(["dwebp", basedir + "/" + filepath, "-o", basedir + "/" + newpath], stderr=subprocess.DEVNULL)
+		os.remove(basedir + "/" + filepath)
+		return newpath
