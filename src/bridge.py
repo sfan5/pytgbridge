@@ -373,8 +373,8 @@ class Bridge():
 		elif media.type == "voice":
 			mediadesc = "(Voice, %s)" % format_duration(media.duration)
 		#
-		mediafilename = self.web.generate_filename(mediaext)
-		url = self.web.download_and_serve(self.tg.get_file_url(media.file_id), filename=mediafilename)
+		remote = self.tg.get_file_url(media.file_id)
+		url = self.web.download_and_serve(remote, extension=mediaext)
 		post = ""
 		if event.caption is not None:
 			post = " " + self.tf.tg.convert(event.caption, event.caption_entities)
@@ -450,8 +450,8 @@ class Bridge():
 
 	def tg_cphoto_changed(self, l, event, media):
 		logging.info("[TG] chat photo changed")
-		mediafilename = self.web.generate_filename(media.extension)
-		url = self.web.download_and_serve(self.tg.get_file_url(media.file_id), filename=mediafilename)
+		remote = self.tg.get_file_url(media.file_id)
+		url = self.web.download_and_serve(remote, extension=media.extension)
 		self.irc.privmsg(l.irc, "%s set a new chat photo (%dx%d): %s" % (
 			self._tg_format_user(event.from_user),
 			media.dimensions[0], media.dimensions[1], url

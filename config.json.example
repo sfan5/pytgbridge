@@ -37,10 +37,10 @@
 	web_backend: {
 		type: "external", // stub, builtin or external
 
-		// PICK THE SECTION MATCHING YOUR web_backend AND COMMENT THE OTHERS OUT
+		// PICK THE SECTION(S) MATCHING YOUR web_backend AND COMMENT THE OTHERS OUT
 		// options for builtin & external:
 		use_subdirs: true, // spread media files over 26 subdirectories
-		filename_mode: "counter", // how filenames are formatted, supports: "counter", "timestamp", "uuid"
+		//filename_mode: "counter", // how filenames are formatted, supports: "counter" (default), "timestamp", "uuid"
 
 		// options for builtin:
 		//bind: "44.32.11.0", // host to bind to (defaults to 127.0.0.1)
