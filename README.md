@@ -3,7 +3,7 @@ pytgbridge
 
 Telegram/IRC bridge
 
-Uses [pyTelegramBotAPI](https://github.com/eternnoir/pyTelegramBotAPI) and [python-irc](https://github.com/jaraco/irc).
+Uses [pyTelegramBotAPI](https://github.com/eternnoir/pyTelegramBotAPI) and <s>[python-irc](https://github.com/jaraco/irc)</s>.
 
 ### How to
 Create a bot on Telegram using [@BotFather](https://t.me/BotFather) and make sure to **disable** message privacy using `/setprivacy`.
