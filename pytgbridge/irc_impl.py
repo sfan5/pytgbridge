@@ -4,19 +4,23 @@ import time
 import select
 
 # A practical* real-world** implementation of an Internet Relay Chat client
-# * : This means I didn't read the RFC
-# **: This means it only implements whatever niche usecase I had at that time
+# * : This means it only implements whatever niche usecase I had at that time
+# **: This means I didn't read the RFC
 
 __all__ = ["BaseIRCClient"]
 
-def connect_socket(host, port, ipv6=True, ssl=False):
+def connect_socket(host, port, ipv6=True, ssl=False, ssl_verify=True):
 	family = 0 if ipv6 else socket.AF_INET
 	ai = socket.getaddrinfo(host, port, family=family, proto=socket.IPPROTO_TCP)
 	s = socket.socket(*ai[0][:2])
 	s.connect(ai[0][4])
 
 	if ssl:
-		ctx = __import__("ssl").create_default_context()
+		import ssl
+		ctx = ssl.create_default_context()
+		if not ssl_verify:
+			ctx.check_hostname = False
+			ctx.verify_mode = ssl.CERT_NONE
 		s = ctx.wrap_socket(s, server_hostname=host)
 	return s
 
@@ -82,8 +86,12 @@ def log_error(e):
 	print(">>", e, "<<")
 
 class BaseIRCClient():
-	def __init__(self, nick, server, port=6667, ipv6=True, ssl=False, realname="IRC client", password=None):
-		self.conn_params = Params( args=(server, port), kwargs={"ipv6": ipv6, "ssl": ssl} )
+	def __init__(self, nick, server, port=6667, ipv6=True, ssl=False,
+			ssl_verify=True, realname="IRC client", password=None):
+		self.conn_params = Params(
+			args=(server, port),
+			kwargs=dict(ipv6=ipv6, ssl=ssl, ssl_verify=ssl_verify)
+		)
 		self.user_params = Params(nick=nick, realname=realname, password=password)
 		self.s = None
 		self.connect()
@@ -161,14 +169,14 @@ class BaseIRCClient():
 				rl.reset()
 				time.sleep(1) # since the socket isn't open, there is nothing to do for us
 				continue
-			rlist, _, _ = select.select([self.s], [], [])
-			if len(rlist) == 0:
-				continue
+			select.select([self.s], [], [])
 
 			try:
 				data = list(rl.readline(self.s))
 			except socket.error as e:
 				log_error(e)
+				data = None
+			if not data:
 				rl.reset()
 				self.disconnect()
 				continue
@@ -186,7 +194,7 @@ class BaseIRCClient():
 		except socket.error as e:
 			log_error(e)
 			return self.disconnect()
-		enable_keepalive(self.s, 30) # i don't feel like implementing repeated PINGs
+		enable_keepalive(self.s, 30) # I don't feel like implementing repeated PINGs
 
 		if self.user_params.password is not None:
 			self._send(["PASS", self.user_params.password])
