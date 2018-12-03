@@ -1,23 +1,26 @@
 {
-	// NOTE THAT YOU NEED TO REMOVE ALL COMMENTS FROM THIS FILE PRIOR TO RUNNING
+	// Note: This file is parsed according to the JSON5 <https://json5.org/> standard,
+	//       e.g. comments and trailing commas are allowed here.
 	// optional settings are commented out
 
-	"telegram": {
-		"token": "123456:BOT-TOKEN-HERE"
+	telegram: {
+		token: "123456:BOT-TOKEN-HERE",
 	},
-	"irc": {
-		"server": "irc.freenode.net",
-		"port": 6697,
-		"ssl": true,
-		//"ipv6": true, // control usage of IPv6 (defaults to true)
-		"nick": "tg_bridge",
-		//"password": "12345", // server password
-		//"nickpassword": "s3cret" // NickServ password
+	irc: {
+		server: "irc.example.net",
+		port: 6697,
+		ssl: true,
+		//ipv6: true, // enable IPv6 for IRC connection (defaults to true)
+		nick: "tg_bridge",
+		//password: "12345", // server password
+		//nickpassword: "s3cret", // NickServ password
 	},
-	"bridge": {
-		"options": {
+	bridge: {
+		options: {
 			"telegram_bold_nicks": true, // make nicks bold in telegram
 			//"irc_nick_colors": [2, 4, 12], // custom color set for nick colorization on IRC, use [] to disable
+			"convert_webp_stickers": false, // convert WebP stickers to PNG
+
 			"forward_sticker_dimensions": false, // show (Sticker, 512x512) instead of (Sticker)
 			"forward_sticker_emoji": false, // show emoji attached to sticker after (Sticker) tag
 			"forward_document_mime": true, // show (Document, video/mp4) instead of (Document)
@@ -25,26 +28,29 @@
 			"forward_text_formatting_irc": false, // Forward bold and italics formatting from IRC to Telegram
 			"forward_text_formatting_telegram": true, // Forward bold, italics, code, ... formatting from Telegram to IRC
 			"forward_joinleave_irc": false, // Forward joins/part from IRC to Telegram
-			"forward_joinleave_telegram": true // Forward added/removed users from Telegram to IRC
+			"forward_joinleave_telegram": true, // Forward added/removed users from Telegram to IRC
 		},
-		"links": [
-			// find out the telegram id by adding the bot to a channel and looking at the log
-			{"telegram": -123455465, "irc": "#irc_channel"},
-			{"telegram": 323443454, "irc": "#irc_channel2"}
+		links: [
+			// you can find out the telegram id of a chat by adding the bot and watching the log output
+			{telegram: -123455465, irc: "#irc_channel"},
+			{telegram: 323443454, irc: "#irc_channel2"},
 		]
 	},
-	"web_backend": {
-		"type": "external", // stub, builtin or external
+	web_backend: {
+		type: "external", // stub, builtin or external
+
+		// PICK THE SECTION(S) MATCHING YOUR web_backend AND COMMENT THE OTHERS OUT
+		// options for builtin & external:
+		use_subdirs: true, // spread media files over 26 subdirectories
+		//filename_mode: "counter", // how filenames are formatted, supports: "counter" (default), "timestamp", "uuid"
 
 		// options for builtin:
-		//"bind": "44.32.11.0", // host to bind to (defaults to 127.0.0.1)
-		//"external": "myself.dyndns.org", // force differing IP/domain for URLs
-		"port": 8081, // port to bind to
-		"use_subdirs": true // whether to spread files to 26 subdirs
+		//bind: "44.32.11.0", // host to bind to (defaults to 127.0.0.1)
+		//external: "myself.dyndns.org", // use a different IP/domain for URLs
+		port: 8081, // port to bind to
 
 		// options for external:
-		"webpath": "/var/www/tg", // where to write files
-		"baseurl": "http://yourname.me/tg", // external URL of that folder
-		"use_subdirs": true // whether to spread files to 26 subdirs
+		webpath: "/var/www/tg", // where to write files
+		baseurl: "https://yourname.me/tg", // externally reachable URL of that directory
 	}
 }

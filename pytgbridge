@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 import logging
-import json
+import json5
 import threading
 import os
 import sys
@@ -24,6 +24,15 @@ def readopt(name):
 			return e[1]
 	return None
 
+def parse_config(configpath):
+	with open(configpath, "r") as f:
+		s = f.read()
+	try:
+		return json5.loads(s)
+	except ValueError as e:
+		logging.error("Failed to parse configuration file:\n" + str(e))
+		exit(1)
+
 def usage():
 	print("Usage: %s [-q] [-c file.json] [-D]" % sys.argv[0])
 	print("Options:")
@@ -32,16 +41,11 @@ def usage():
 	print("  -D    Fork into background")
 
 def main(configpath, loglevel=logging.INFO):
-	with open(configpath, "r") as f:
-		try:
-			config = json.load(f)
-		except json.JSONDecodeError:
-			logging.error("Couldn't parse configuration file")
-			exit(1)
-
 	logging.basicConfig(format="[%(asctime)s] %(message)s", datefmt="%Y-%m-%d %H:%M:%S", level=loglevel)
-	logging.info("Starting up...")
 
+	config = parse_config(configpath)
+
+	logging.info("Starting up...")
 	try:
 		tg = TelegramClient(config["telegram"])
 		irc = IRCClient(config["irc"])

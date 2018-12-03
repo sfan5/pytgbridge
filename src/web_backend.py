@@ -1,11 +1,15 @@
 import os
 import urllib
 import logging
+import time
+import uuid
 # for built-in HTTP server:
 import threading
 import tempfile
 import http.server
 import socketserver
+# for WebpConverter:
+import subprocess
 
 def http_server_thread(host, port, wwwpath):
 	os.chdir(wwwpath)
@@ -29,6 +33,9 @@ def download_file(url, f):
 	fdcopy(r, f)
 	r.close()
 
+def millitime():
+	return int(time.time() * 1000)
+
 class WebBackend():
 	def __init__(self, config):
 		self.type = config["type"]
@@ -37,8 +44,8 @@ class WebBackend():
 			self.baseurl = config["baseurl"]
 			self.subdirs = config["use_subdirs"]
 		elif self.type == "builtin":
-			bind = "127.0.0.1" if "bind" not in config else config["bind"]
-			extern = bind if "external" not in config else config["external"]
+			bind = config.get("bind", "127.0.0.1")
+			extern = config.get("external", bind)
 			port = config["port"]
 			self.subdirs = config["use_subdirs"]
 			# Used by download_and_serve():
@@ -48,8 +55,18 @@ class WebBackend():
 			t.start()
 		elif self.type == "stub":
 			logging.warning("Web backend not functional! (stub)")
+			return
 		else:
 			logging.error("Unknown web backend type")
+			exit(1)
+
+		self.f_mode = config.get("filename_mode", "counter")
+		if self.f_mode == "counter":
+			self.f_number = 1
+		elif self.f_mode in ("timestamp", "uuid"):
+			pass
+		else:
+			logging.error("Unknown filename mode")
 			exit(1)
 
 	@staticmethod
@@ -61,22 +78,51 @@ class WebBackend():
 		return v
 
 	def _filepath(self, filename):
-		assert(self.type in ("external", "builtin"))
 		if not self.subdirs:
 			return filename
 		h = WebBackend._hash(filename)
 		h = chr(97 + h % 26) # A-Z
-		try:
-			os.mkdir(self.webpath + "/" + h)
-		except FileExistsError:
-			pass
+		os.makedirs(self.webpath + "/" + h, exist_ok=True)
 		return h + "/" + filename
 
-	def download_and_serve(self, url, filename=None):
+	def _filename(self, extension=None):
+		suff = extension and ("." + extension) or ""
+		if self.f_mode == "counter":
+			self.f_number += 1
+			return "file_%d%s" % (self.f_number - 1, suff)
+		elif self.f_mode == "timestamp":
+			return "%d%s" % (millitime(), suff)
+		elif self.f_mode == "uuid":
+			return "%s%s" % (uuid.uuid4(), suff)
+
+	def download_and_serve(self, url, filename=None, extension=None, hook=None):
 		if self.type == "stub":
 			return "<no link available>"
-		filepath = self._filepath(url.split("/")[-1] if filename is None else filename)
+		if filename is None:
+			filename = self._filename(extension)
+		else:
+			assert(extension is None)
+
+		filepath = self._filepath(filename)
 		with open(self.webpath + "/" + filepath, "wb") as f:
 			download_file(url, f)
+
+		if hook is not None:
+			filepath = hook(filepath, self.webpath)
 		return self.baseurl + "/" + filepath
 
+class WebpConverter():
+	@staticmethod
+	def check():
+		ret = subprocess.call(["dwebp", "-version"], stdout=subprocess.DEVNULL)
+		if ret != 0:
+			logging.error("The WebP command line tools need to be installed to use this feature (try: apt install webp)")
+			exit(1)
+	@staticmethod
+	def hook(filepath, basedir):
+		if not filepath.endswith(".webp"):
+			return
+		newpath = filepath[:-4] + "png"
+		subprocess.check_call(["dwebp", basedir + "/" + filepath, "-o", basedir + "/" + newpath], stderr=subprocess.DEVNULL)
+		os.remove(basedir + "/" + filepath)
+		return newpath
