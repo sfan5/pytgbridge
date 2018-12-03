@@ -48,7 +48,9 @@
 		//bind: "44.32.11.0", // host to bind to (defaults to 127.0.0.1)
 		//external: "myself.dyndns.org", // use a different IP/domain for URLs
 		port: 8081, // port to bind to
-
+		//"enable" ssl, it "emulates" it (Links in your client would be https:// and not http://)
+		ssl: false
+	
 		// options for external:
 		webpath: "/var/www/tg", // where to write files
 		baseurl: "https://yourname.me/tg", // externally reachable URL of that directory
