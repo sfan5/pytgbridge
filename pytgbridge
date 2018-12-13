@@ -52,7 +52,9 @@ def main(configpath, loglevel=logging.INFO):
 		wb = WebBackend(config["web_backend"])
 		b = Bridge(tg, irc, wb, config["bridge"])
 	except (KeyError, TypeError):
-		logging.error("Configuration incomplete/invalid")
+		logging.exception("")
+		logging.error("Your pytgbridge configuration is incomplete or invalid.\n"+
+			"The stacktrace usually contains a hint at whats wrong.")
 		exit(1)
 
 	start_new_thread(tg.run)
