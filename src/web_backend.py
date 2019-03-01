@@ -114,10 +114,11 @@ class WebBackend():
 class WebpConverter():
 	@staticmethod
 	def check():
-		ret = subprocess.call(["dwebp", "-version"], stdout=subprocess.DEVNULL)
-		if ret != 0:
+		try:
+			subprocess.check_call(["dwebp", "-version"], stdout=subprocess.DEVNULL)
+		except:
 			logging.error("The WebP command line tools need to be installed to use this feature (try: apt install webp)")
-			exit(1)
+			os._exit(1)
 	@staticmethod
 	def hook(filepath, basedir):
 		if not filepath.endswith(".webp"):
