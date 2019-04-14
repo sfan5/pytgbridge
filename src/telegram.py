@@ -40,6 +40,7 @@ mime_mapping = { # mime type -> file extension
 	"audio/flac": "flac",
 
 	"video/mp4": "mp4",
+	"video/webm": "webm",
 
 	"image/jpg": "jpg",
 	"image/webp": "webp",
