@@ -266,6 +266,9 @@ class Bridge():
 			r += " Fwd from %s:" % self._tg_format_user(event.forward_from)
 		elif event.forward_from_chat is not None:
 			r += " Fwd from %s:" % event.forward_from_chat.title
+		elif event.json.get("forward_sender_name") is not None:
+			# pyTelegramBotAPI is missing support for this
+			r += " Fwd from %s:" % event.json["forward_sender_name"]
 		return r
 
 	def _tg_format_msg(self, event):
