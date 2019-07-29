@@ -46,9 +46,6 @@ mime_mapping = { # mime type -> file extension
 	"image/webp": "webp",
 }
 
-def ostr(obj):
-	return obj or ""
-
 class TelegramMediaContainer():
 	def __init__(self, orig, init_from="event"):
 		if init_from == "photo_list":
@@ -73,7 +70,7 @@ class TelegramMediaContainer():
 			if c.performer is None and c.title is None:
 				self.desc = None
 			elif c.performer is None or c.title is None:
-				self.desc = ostr(c.performer) + ostr(c.title)
+				self.desc = (c.performer or "") + (c.title or "")
 			else:
 				self.desc = "%s – %s" % (c.performer, c.title)
 			mime = c.mime_type
@@ -89,6 +86,7 @@ class TelegramMediaContainer():
 			c = orig.sticker
 			self.emoji = c.emoji
 			self.dimensions = (c.width, c.height)
+			self.is_animated = orig.json["sticker"].get("is_animated", False) # undocumented
 			mime = "image/webp"
 		elif self.type == "video":
 			c = orig.video

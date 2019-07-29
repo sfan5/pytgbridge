@@ -373,6 +373,10 @@ class Bridge():
 				mediadesc = "(Sticker)"
 			if self.conf.forward_sticker_emoji and media.emoji is not None:
 				mediadesc += " " + media.emoji
+			if media.is_animated: # TODO: do this better someday
+				mediadesc = "(Animated " + mediadesc[1:]
+				self.irc.privmsg(l.irc, self._tg_format_msg_prefix(event) + " " + mediadesc)
+				return
 		elif media.type == "video":
 			mediadesc = "(Video, %s)" % format_duration(media.duration)
 		elif media.type == "video_note":
