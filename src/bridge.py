@@ -54,10 +54,11 @@ class IRCFormattingConverter(): # IRC -> HTML
 		if self.enabled:
 			self.bold = tmp(open="<b>", close="</b>")
 			self.italics = tmp(open="<i>", close="</i>")
+			self.underline = tmp(open="<u>", close="</u>")
 		else:
-			self.bold = self.italics = tmp(open="", close="")
+			self.bold = self.italics = self.underline = tmp(open="", close="")
 	def convert(self, text):
-		bold, italics = False, False
+		bold = italics = underline = False
 		skip_digits = 0
 		ret = ""
 		for c in text:
@@ -76,12 +77,15 @@ class IRCFormattingConverter(): # IRC -> HTML
 					ret += self.bold.close
 				if italics:
 					ret += self.italics.close
-				bold, italics = False, False
+				if underline:
+					ret += self.underline.close
+				bold = italics = underline = False
 			elif c == "\x1d":
 				ret += self.italics.close if italics else self.italics.open
 				italics = not italics
-			elif c == "\x1f": # underline (ignored)
-				pass
+			elif c == "\x1f":
+				ret += self.underline.close if underline else self.underline.open
+				underline = not underline
 			else:
 				# Handle text: escape if required and pass through
 				if c in ("<", ">", "&"):
@@ -91,6 +95,8 @@ class IRCFormattingConverter(): # IRC -> HTML
 			ret += self.bold.close
 		if italics:
 			ret += self.italics.close
+		if underline:
+			ret += self.underline.close
 		return ret
 
 class TelegramFormattingConverter(): # Telegram -> IRC
@@ -132,15 +138,17 @@ class TelegramFormattingConverter(): # Telegram -> IRC
 				)
 				ret += "@" + self.userfmt(u)
 			elif e.type == "code" or e.type == "pre":
-				c = 15 # FIXME should be configurable
+				c = 15
 				ret += "\x03%02d" % c + etext + "\x0f"
 			elif e.type == "bold":
 				ret += "\x02" + etext + "\x02"
 			elif e.type == "italic":
 				ret += "\x1d" + etext + "\x1d"
+			elif e.type == "underline":
+				ret += "\x1f" + etext + "\x1f"
 			elif e.type == "text_mention":
 				ret += self.userfmt(e.user)
-			else: # unhandled: hashtag, bot_command, url, email, text_link
+			else: # leave everything else as-is
 				ret += etext
 			tpos += rlen
 		return ret
