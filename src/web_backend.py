@@ -86,7 +86,7 @@ class WebBackend():
 		return h + "/" + filename
 
 	def _filename(self, extension=None):
-		suff = extension and ("." + extension) or ""
+		suff = ("." + extension) if extension else ""
 		if self.f_mode == "counter":
 			self.f_number += 1
 			return "file_%d%s" % (self.f_number - 1, suff)

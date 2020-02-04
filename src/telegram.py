@@ -59,7 +59,7 @@ class TelegramMediaContainer():
 		elif init_from == "event":
 			pass # see below
 		else:
-			raise NotImplementedException("???")
+			raise NotImplementedError("???")
 
 		self.type = orig.content_type
 		mime = None
@@ -103,7 +103,7 @@ class TelegramMediaContainer():
 			self.duration = c.duration
 			self.mime = mime = c.mime_type
 		else:
-			raise NotImplementedException("content type not supported")
+			raise NotImplementedError("content type not supported")
 
 		self.file_id = c.file_id
 		self.file_size = c.file_size

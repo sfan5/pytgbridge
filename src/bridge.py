@@ -245,7 +245,7 @@ class Bridge():
 				if l.irc == irc.channel:
 					return l
 			return None
-		raise NotImplementedException()
+		raise NotImplementedError()
 
 	def _tg_format_user(self, user):
 		if user.username is not None:
