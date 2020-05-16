@@ -203,6 +203,7 @@ class Bridge():
 		self._tg_event_handler("venue", self.tg_venue)
 		self._tg_event_handler("contact", self.tg_contact)
 		self._tg_event_handler("game", self.tg_game)
+		self._tg_event_handler("poll", self.tg_poll)
 		self._tg_event_handler("users_joined", self.tg_users_joined)
 		self._tg_event_handler("user_left", self.tg_user_left)
 		self._tg_event_handler("ctitle_changed", self.tg_ctitle_changed)
@@ -437,6 +438,30 @@ class Bridge():
 		if event.game.description is not None:
 			gamedesc += ": " + event.game.description
 		self.irc.privmsg(l.irc, "%s (Game, %s)" % (self._tg_format_msg_prefix(event), gamedesc))
+
+	def tg_poll(self, l, event):
+		logging.info("[TG] poll")
+		polldesc = ""
+		if event.poll.is_anonymous:
+			polldesc += "Anonymous "
+		polldesc += "Quiz" if event.poll.type == "quiz" else "Poll"
+		if event.poll.is_closed:
+			polldesc += " closed"
+		showvotes = event.poll.is_closed or event.poll.total_voter_count > 0
+		if showvotes:
+			polldesc += " with %d votes" % event.poll.total_voter_count
+		if event.poll.allows_multiple_answers:
+			polldesc += ", multi-choice"
+		#
+		polldetail = "\"%s\"" % event.poll.question
+		bold = "\x02" if self.nc.enabled() else ""
+		for option in event.poll.options:
+			polldetail += " … " + option.text
+			if showvotes:
+				polldetail += " %s(%d)%s" % (bold, option.voter_count, bold)
+		#
+		self.irc.privmsg(l.irc, "%s (%s) %s" % (
+			self._tg_format_msg_prefix(event), polldesc, polldetail))
 
 	def tg_users_joined(self, l, event):
 		if not self.conf.forward_joinleave_telegram:

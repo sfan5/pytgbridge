@@ -8,6 +8,7 @@ mapped_content_type = {
 	"venue": "venue",
 	"contact": "contact",
 	"game": "game",
+	"poll": "poll",
 	"new_chat_members": "users_joined",
 	"left_chat_member": "user_left",
 	"new_chat_title": "ctitle_changed",
