@@ -203,8 +203,13 @@ class TelegramClient():
 	def send_reply_message(self, event, text, **kwargs):
 		self.bot.send_message(event.chat.id, text, reply_to_message_id=event.message_id)
 
-	def get_file_url(self, file_id):
-		info = self.bot.get_file(file_id)
+	def get_file_url(self, file_id, allowed_failure=False):
+		try:
+			info = self.bot.get_file(file_id)
+		except telebot.apihelper.ApiException as e:
+			if not allowed_failure:
+				logging.exception("Retrieving file info failed")
+			return None
 		return "https://api.telegram.org/file/bot%s/%s" % (self.token, info.file_path)
 
 	def get_own_user(self):

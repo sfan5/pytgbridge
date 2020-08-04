@@ -22,6 +22,19 @@ def format_duration(d):
 		return "%dm" % m
 	return "%dm%ds" % (m, s)
 
+def format_filesize(n):
+	d, u = 1, "bytes"
+	if n >= 1000**3:
+		d, u = 1000**3, "GB"
+	elif n >= 1000**2:
+		d, u = 1000**2, "MB"
+	elif n >= 1000:
+		d, u = 1000, "KB"
+	s = "%.1f" % (n / d)
+	if s.endswith(".0"):
+		s = s[:-2]
+	return s + " " + u
+
 class NickColorizer():
 	def __init__(self, config=None):
 		if config is None:
@@ -361,21 +374,23 @@ class Bridge():
 		logging.info("[TG] media (%s)", media.type)
 		mediadesc = "(???)"
 		mediaext = media.extension
+		dl_allowed_failure = False
 		if media.type == "audio":
 			if media.desc is not None and self.conf.forward_audio_description:
 				mediadesc = "(Audio, %s: %s)" % (format_duration(media.duration), media.desc)
 			else:
 				mediadesc = "(Audio, %s)" % format_duration(media.duration)
+		elif media.type == "document" and media.mime in ("video/mp4", "image/gif"):
+			mediadesc = "(GIF)"
+			mediaext = {"video/mp4": "mp4", "image/gif": "gif"}[media.mime]
 		elif media.type == "document":
-			if media.mime in ("video/mp4", "image/gif"):
-				mediadesc = "(GIF)"
-				mediaext = {"video/mp4": "mp4", "image/gif": "gif"}[media.mime]
-			elif self.conf.forward_document_mime:
-				mediadesc = "(Document, %s)" % media.mime
+			if self.conf.forward_document_mime:
+				mediadesc = "(Document, %s, %s)" % (media.mime, format_filesize(media.file_size))
 			else:
-				mediadesc = "(Document)"
-			if mediaext is None:
-				mediaext = media.filename.split(".")[-1]
+				mediadesc = "(Document, %s)" % format_filesize(media.file_size)
+			mediadesc += " \"%s\"" % media.filename
+			mediaext = media.filename.split(".")[-1]
+			dl_allowed_failure = True
 		elif media.type == "photo":
 			mediadesc = "(Photo, %dx%d)" % media.dimensions
 		elif media.type == "sticker":
@@ -396,15 +411,19 @@ class Bridge():
 		elif media.type == "voice":
 			mediadesc = "(Voice, %s)" % format_duration(media.duration)
 		#
-		remote = self.tg.get_file_url(media.file_id)
-		if self.conf.convert_webp_stickers and media.type == "sticker":
+		remote = self.tg.get_file_url(media.file_id, allowed_failure=dl_allowed_failure)
+		if remote is None:
+			url = "" if dl_allowed_failure else "<error>"
+		elif self.conf.convert_webp_stickers and media.type == "sticker":
 			url = self.web.download_and_serve(remote, extension=mediaext, hook=WebpConverter.hook)
 		else:
 			url = self.web.download_and_serve(remote, extension=mediaext)
+		if url != "":
+			url = " " + url
 		post = ""
 		if event.caption is not None:
 			post = " " + self.tf.tg.convert(event.caption, event.caption_entities)
-		self.irc.privmsg(l.irc, self._tg_format_msg_prefix(event) + " " + mediadesc + " " + url + post)
+		self.irc.privmsg(l.irc, self._tg_format_msg_prefix(event) + " " + mediadesc + url + post)
 
 	def tg_location(self, l, event):
 		logging.info("[TG] location")
