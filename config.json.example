@@ -18,7 +18,9 @@
 	bridge: {
 		options: {
 			"telegram_bold_nicks": true, // make nicks bold in telegram
+			"telegram_show_joins": false, // show joins/parts from IRC on Telegram
 			//"irc_nick_colors": [2, 4, 12], // custom color set for nick colorization on IRC, use [] to disable
+			"irc_show_added_users": true, // show added/removed users from Telegram on IRC
 			"convert_webp_stickers": false, // convert WebP stickers to PNG
 
 			"forward_sticker_dimensions": false, // show (Sticker, 512x512) instead of (Sticker)
@@ -27,8 +29,6 @@
 			"forward_audio_description": true, // show (Audio, 3m47s: Rebecca Black – Friday) instead of (Audio, 3m47s) if possible
 			"forward_text_formatting_irc": false, // Forward bold and italics formatting from IRC to Telegram
 			"forward_text_formatting_telegram": true, // Forward bold, italics, code, ... formatting from Telegram to IRC
-			"forward_joinleave_irc": false, // Forward joins/part from IRC to Telegram
-			"forward_joinleave_telegram": true, // Forward added/removed users from Telegram to IRC
 		},
 		links: [
 			// you can find out the telegram id of a chat by adding the bot and watching the log output

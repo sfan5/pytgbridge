@@ -156,7 +156,9 @@ class TelegramFormattingConverter(): # Telegram -> IRC
 LinkTuple = namedtuple("LinkTuple", ["telegram", "irc"])
 config_names = [
 	"telegram_bold_nicks",
+	"telegram_show_joins",
 	"irc_nick_colors",
+	"irc_show_added_users",
 	"convert_webp_stickers",
 
 	"forward_sticker_dimensions",
@@ -165,9 +167,10 @@ config_names = [
 	"forward_audio_description",
 	"forward_text_formatting_irc",
 	"forward_text_formatting_telegram",
-	"forward_joinleave_irc",
-	"forward_joinleave_telegram"
 ]
+config_defaults = {
+	"irc_nick_colors": None, # uses default colors
+}
 
 class Bridge():
 	def __init__(self, tg, irc, wb, config):
@@ -177,9 +180,9 @@ class Bridge():
 		#
 		self.links = set(LinkTuple(**e) for e in config["links"])
 		logging.info("%d link(s) configured", len(self.links))
-		if "irc_nick_colors" not in config["options"].keys():
-			config["options"]["irc_nick_colors"] = None # use default
-		self.conf = namedtuple("Conf", config_names)(**config["options"])
+		options = config_defaults.copy()
+		options.update(config["options"])
+		self.conf = namedtuple("Conf", config_names)(**options)
 		if self.conf.convert_webp_stickers:
 			WebpConverter.check()
 		#
@@ -312,7 +315,7 @@ class Bridge():
 
 	def irc_join(self, l, event):
 		logging.info("[IRC] %s joins %s", event.nick, event.channel)
-		if not self.conf.forward_joinleave_irc:
+		if not self.conf.telegram_show_joins:
 			return
 		if self.conf.telegram_bold_nicks:
 			fmt = "<b>%s</b> has joined"
@@ -322,7 +325,7 @@ class Bridge():
 
 	def irc_part(self, l, event):
 		logging.info("[IRC] %s leaves %s", event.nick, event.channel)
-		if not self.conf.forward_joinleave_irc:
+		if not self.conf.telegram_show_joins:
 			return
 		if self.conf.telegram_bold_nicks:
 			fmt = "<b>%s</b> has left"
@@ -464,7 +467,7 @@ class Bridge():
 			self._tg_format_msg_prefix(event), polldesc, polldetail))
 
 	def tg_users_joined(self, l, event):
-		if not self.conf.forward_joinleave_telegram:
+		if not self.conf.irc_show_added_users:
 			return
 		for member in event.new_chat_members:
 			logging.info("[TG] user joined: %d", member.id)
@@ -478,7 +481,7 @@ class Bridge():
 
 	def tg_user_left(self, l, event):
 		logging.info("[TG] user left: %d", event.left_chat_member.id)
-		if not self.conf.forward_joinleave_telegram:
+		if not self.conf.irc_show_added_users:
 			return
 		if event.from_user.id == event.left_chat_member.id:
 			self.irc.privmsg(l.irc, "%s has left" % self._tg_format_user(event.from_user))

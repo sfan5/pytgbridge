@@ -55,7 +55,7 @@ def main(configpath, loglevel=logging.INFO):
 		logging.exception("")
 		logging.error("Your pytgbridge configuration is incomplete or invalid.\n"+
 			"The stacktrace usually contains a hint at whats wrong.")
-		exit(1)
+		os._exit(1)
 
 	start_new_thread(tg.run)
 	
