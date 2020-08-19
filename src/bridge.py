@@ -272,7 +272,7 @@ class Bridge():
 		if v1 == "": # (can't be None)
 			italics = "\x1d" if self.nc.enabled() else ""
 			return italics + "Deleted Account" + italics
-		return self.nc.colorize( v1 + " " + ("" if v2 is None else v2) )
+		return self.nc.colorize( v1 + " " + (v2 or "") )
 
 	def _tg_format_msg_prefix(self, event, action=False):
 		fmt = "* %s" if action else "<%s>"
@@ -372,7 +372,9 @@ class Bridge():
 
 	def tg_media(self, l, event, media):
 		logging.info("[TG] media (%s)", media.type)
-		mediadesc = "(???)"
+		parts = []
+		# main description + determine file extension
+		mediadesc = ""
 		mediaext = media.extension
 		dl_allowed_failure = False
 		if media.type == "audio":
@@ -410,7 +412,11 @@ class Bridge():
 			mediadesc = "(Video Note, %s)" % format_duration(media.duration)
 		elif media.type == "voice":
 			mediadesc = "(Voice, %s)" % format_duration(media.duration)
+		parts.append(mediadesc)
 		#
+		if event.via_bot is not None:
+			parts.append("via @" + self._tg_format_user(event.via_bot))
+		# download file and generate URL
 		remote = self.tg.get_file_url(media.file_id, allowed_failure=dl_allowed_failure)
 		if remote is None:
 			url = "" if dl_allowed_failure else "<error>"
@@ -418,12 +424,13 @@ class Bridge():
 			url = self.web.download_and_serve(remote, extension=mediaext, hook=WebpConverter.hook)
 		else:
 			url = self.web.download_and_serve(remote, extension=mediaext)
-		if url != "":
-			url = " " + url
-		post = ""
+		parts.append(url)
+		#
 		if event.caption is not None:
-			post = " " + self.tf.tg.convert(event.caption, event.caption_entities)
-		self.irc.privmsg(l.irc, self._tg_format_msg_prefix(event) + " " + mediadesc + url + post)
+			parts.append(self.tf.tg.convert(event.caption, event.caption_entities))
+		#
+		full = " ".join(filter(None, parts))
+		self.irc.privmsg(l.irc, self._tg_format_msg_prefix(event) + " " + full)
 
 	def tg_location(self, l, event):
 		logging.info("[TG] location")

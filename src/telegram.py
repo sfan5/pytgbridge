@@ -88,7 +88,7 @@ class TelegramMediaContainer():
 			c = orig.sticker
 			self.emoji = c.emoji
 			self.dimensions = (c.width, c.height)
-			self.is_animated = orig.json["sticker"].get("is_animated", False) # undocumented
+			self.is_animated = c.is_animated
 			mime = "image/webp"
 		elif self.type == "video":
 			c = orig.video
@@ -125,7 +125,6 @@ class TelegramClient():
 
 		self._telebot_event_handler(self.cmd_start, commands=["start"])
 		self._telebot_event_handler(self.cmd_help, commands=["help"])
-		# FIXME: not a portable way of registering commands
 		self._telebot_event_handler(self.cmd_me, commands=["me"])
 		for k, v in mapped_content_type.items():
 			if v == "": continue
@@ -190,6 +189,8 @@ class TelegramClient():
 		self._invoke_event_handler("cmd_me", (message, ))
 
 	def on_media(self, message):
+		# TODO: remove when pyTelegramBotAPI supports this:
+		setattr(message, "via_bot", telebot.types.User.de_json(message.json.get("via_bot")))
 		self._invoke_event_handler("media", (message, TelegramMediaContainer(message)))
 
 	def on_new_chat_photo(self, message):
