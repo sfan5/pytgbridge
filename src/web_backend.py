@@ -73,7 +73,7 @@ class WebBackend():
 	def _hash(s):
 		v = 0
 		for c in s:
-			v += ord(c)
+			v ^= ord(c) * 37
 			v = (v << 1) & 0xffff | (v >> 15) # ROR by 1 bit
 		return v
 
