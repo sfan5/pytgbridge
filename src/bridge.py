@@ -161,6 +161,8 @@ class TelegramFormattingConverter(): # Telegram -> IRC
 				ret += "\x1f" + etext + "\x1f"
 			elif e.type == "text_mention":
 				ret += self.userfmt(e.user)
+			elif e.type == "text_link":
+				ret += etext + " <" + e.url + ">"
 			else: # leave everything else as-is
 				ret += etext
 			tpos += rlen
