@@ -23,6 +23,7 @@ mapped_content_type = {
 
 content_types_media = [
 	"audio",
+	"animation",
 	"document",
 	"photo",
 	"sticker",
@@ -76,6 +77,10 @@ class TelegramMediaContainer():
 			else:
 				self.desc = "%s – %s" % (c.performer, c.title)
 			mime = c.mime_type
+		elif self.type == "animation":
+			c = orig.animation
+			self.mime = c.mime_type
+			self.filename = c.file_name
 		elif self.type == "document":
 			c = orig.document
 			self.mime = c.mime_type

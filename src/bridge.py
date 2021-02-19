@@ -384,7 +384,7 @@ class Bridge():
 				mediadesc = "(Audio, %s: %s)" % (format_duration(media.duration), media.desc)
 			else:
 				mediadesc = "(Audio, %s)" % format_duration(media.duration)
-		elif media.type == "document" and media.mime in ("video/mp4", "image/gif"):
+		elif media.type == "animation":
 			mediadesc = "(GIF)"
 			mediaext = {"video/mp4": "mp4", "image/gif": "gif"}[media.mime]
 		elif media.type == "document":
