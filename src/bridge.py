@@ -245,7 +245,7 @@ class Bridge():
 	def _tg_event_handler(self, event, func):
 		# So we don't have to repeat this code in every handler
 		def wrap(event, *args):
-			if event.from_user.id in ignored_users:
+			if event.from_user.id in self.ignored_users:
 				return
 			if event.chat.type in ("private", "channel"):
 				return
