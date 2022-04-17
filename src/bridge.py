@@ -194,6 +194,7 @@ class Bridge():
 		self.web = wb
 		#
 		self.links = set(LinkTuple(**e) for e in config["links"])
+		self.ignored_users = set(config["ignored_telegram_users"]) if "ignored_telegram_users" in config else []
 		logging.info("%d link(s) configured", len(self.links))
 		options = config_defaults.copy()
 		options.update(config["options"])
@@ -244,6 +245,8 @@ class Bridge():
 	def _tg_event_handler(self, event, func):
 		# So we don't have to repeat this code in every handler
 		def wrap(event, *args):
+			if event.from_user.id in self.ignored_users:
+				return
 			if event.chat.type in ("private", "channel"):
 				return
 			l = self._find_link(tg=event)
