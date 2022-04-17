@@ -194,7 +194,7 @@ class Bridge():
 		self.web = wb
 		#
 		self.links = set(LinkTuple(**e) for e in config["links"])
-		self.ignored_users = set(config["ignored_telegram_users"])
+		self.ignored_users = set(config["ignored_telegram_users"]) if "ignored_telegram_users" in config else []
 		logging.info("%d link(s) configured", len(self.links))
 		options = config_defaults.copy()
 		options.update(config["options"])
