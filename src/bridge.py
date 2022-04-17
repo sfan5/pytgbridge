@@ -240,10 +240,12 @@ class Bridge():
 				return
 			func(l, event, *args)
 		self.irc.event_handler(event, wrap)
-
+	
 	def _tg_event_handler(self, event, func):
 		# So we don't have to repeat this code in every handler
 		def wrap(event, *args):
+			if event.from_user.id in ignored_users:
+				return
 			if event.chat.type in ("private", "channel"):
 				return
 			l = self._find_link(tg=event)
