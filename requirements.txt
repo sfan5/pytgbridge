@@ -1,3 +1,0 @@
-pyTelegramBotAPI>=3.7.4
-irc>=15.0.5
-json5>=0.6

@@ -1,7 +1,8 @@
 import re
 import logging
 from collections import namedtuple
-from src.web_backend import WebpConverter
+
+from .web_backend import WebpConverter
 
 def dump(obj, name=None, r=False): ##DEBUG##
 	name = "" if name is None else (name + ".")

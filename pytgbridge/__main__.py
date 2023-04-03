@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 import logging
 import json5
 import threading
@@ -6,10 +5,12 @@ import os
 import sys
 import getopt
 
-from src.telegram import TelegramClient
-from src.irc import IRCClient
-from src.bridge import Bridge
-from src.web_backend import WebBackend
+from .telegram import TelegramClient
+from .irc import IRCClient
+from .bridge import Bridge
+from .web_backend import WebBackend
+
+opts = {}
 
 def start_new_thread(func, join=False, args=(), kwargs={}):
 	t = threading.Thread(target=func, args=args, kwargs=kwargs)
@@ -24,8 +25,8 @@ def readopt(name):
 			return e[1]
 	return None
 
-def parse_config(configpath):
-	with open(configpath, "r") as f:
+def parse_config(path):
+	with open(path, "r") as f:
 		s = f.read()
 	try:
 		return json5.loads(s)
@@ -34,13 +35,29 @@ def parse_config(configpath):
 		exit(1)
 
 def usage():
-	print("Usage: %s [-q] [-c file.json] [-D]" % sys.argv[0])
+	print("Usage: %s [-q] [-c file] [-D]" % sys.argv[0])
 	print("Options:")
 	print("  -q    Be quieter, raise log level to WARNING")
 	print("  -c    Set location of config file (default: ./config.json)")
 	print("  -D    Fork into background")
 
-def main(configpath, loglevel=logging.INFO):
+def main():
+	global opts
+	try:
+		opts, args = getopt.getopt(sys.argv[1:], "hqc:D", ["help"])
+	except getopt.GetoptError as e:
+		print(str(e))
+		exit(1)
+	# Process command line args
+	if len(args) > 0 or readopt("-h") is not None or readopt("--help") is not None:
+		usage()
+		exit(0)
+	loglevel = logging.INFO if readopt("-q") is None else logging.WARNING
+	configpath = readopt("-c") or "./config.json"
+	# Fork into background
+	if readopt("-D") is not None and os.fork():
+		sys.exit()
+
 	logging.basicConfig(format="[%(asctime)s] %(message)s", datefmt="%Y-%m-%d %H:%M:%S", level=loglevel)
 
 	config = parse_config(configpath)
@@ -66,21 +83,4 @@ def main(configpath, loglevel=logging.INFO):
 		os._exit(1)
 
 if __name__ == "__main__":
-	try:
-		opts, args = getopt.getopt(sys.argv[1:], "hqc:D", ["help"])
-	except getopt.GetoptError as e:
-		print(str(e))
-		exit(1)
-	# Process command line args
-	if readopt("-h") is not None or readopt("--help") is not None:
-		usage()
-		exit(0)
-	loglevel = logging.INFO if readopt("-q") is None else logging.WARNING
-	configpath = "./config.json"
-	if readopt("-c") is not None:
-		configpath = readopt("-c")
-	# Fork into background
-	if readopt("-D") is not None and os.fork():
-		sys.exit()
-	# Run the actual program
-	main(configpath, loglevel)
+	main()
