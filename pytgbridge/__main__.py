@@ -12,26 +12,25 @@ from .web_backend import WebBackend
 
 opts = {}
 
-def start_new_thread(func, join=False, args=(), kwargs={}):
+def start_new_thread(func, join=False, args=(), kwargs=None):
 	t = threading.Thread(target=func, args=args, kwargs=kwargs)
 	t.start()
 	if join:
 		t.join()
 
 def readopt(name):
-	global opts
 	for e in opts:
 		if e[0] == name:
 			return e[1]
 	return None
 
 def parse_config(path):
-	with open(path, "r") as f:
+	with open(path, "rb") as f:
 		s = f.read()
 	try:
 		return json5.loads(s)
 	except ValueError as e:
-		logging.error("Failed to parse configuration file:\n" + str(e))
+		logging.error("Failed to parse configuration file:\n%s", e)
 		exit(1)
 
 def usage():
@@ -75,7 +74,7 @@ def main():
 		os._exit(1)
 
 	start_new_thread(tg.run)
-	
+
 	try:
 		start_new_thread(irc.run, join=True)
 	except KeyboardInterrupt:

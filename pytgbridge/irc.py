@@ -13,19 +13,21 @@ class IRCEvent():
 		setattr(self, argname, orig.arguments[0] if len(orig.arguments) > 0 else None)
 
 class IRCBot(irc.bot.SingleServerIRCBot):
-	def __init__(self, args, kwargs={}, ns_password=None):
+	def __init__(self, args, kwargs=None, ns_password=None):
+		kwargs = kwargs or {}
 		irc.bot.SingleServerIRCBot.__init__(self, *args, **kwargs)
 		self.connection.buffer_class = buffer.LenientDecodingLineBuffer
 		self.event_handlers = {}
 		self.ns_password = ns_password
 
-	def _invoke_event_handler(self, name, args=(), kwargs={}):
+	def _invoke_event_handler(self, name, args=(), kwargs=None):
 		if name not in self.event_handlers.keys():
 			logging.warning("Unhandeled '%s' event", name)
 			return
+		kwargs = kwargs or {}
 		try:
 			self.event_handlers[name](*args, **kwargs)
-		except Exception as e:
+		except Exception:
 			logging.exception("Exception in IRC event handler")
 
 
@@ -109,4 +111,3 @@ class IRCClient():
 				self.bot.connection.privmsg(target, m)
 		except irc.client.ServerNotConnectedError:
 			logging.warning("Dropping message because IRC not connected yet")
-

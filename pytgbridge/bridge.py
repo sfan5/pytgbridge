@@ -151,7 +151,7 @@ class TelegramFormattingConverter(): # Telegram -> IRC
 					last_name=None,
 				)
 				ret += "@" + self.userfmt(u)
-			elif e.type == "code" or e.type == "pre":
+			elif e.type in ("code", "pre"):
 				c = 15
 				ret += "\x03%02d" % c + etext + "\x0f"
 			elif e.type == "bold":
@@ -548,4 +548,3 @@ class Bridge():
 			self._tg_format_user(event.from_user),
 			self._tg_format_msg(event.pinned_message),
 		))
-

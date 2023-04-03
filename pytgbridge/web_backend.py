@@ -17,7 +17,8 @@ def http_server_thread(host, port, wwwpath):
 	logging.info("Built-in HTTP server listening on %s:%d, dir: %s", host, port, wwwpath)
 	serv.serve_forever()
 
-def urlopen(url, headers={}):
+def urlopen(url, headers=None):
+	headers = headers or {}
 	r = urllib.request.Request(url, headers=headers)
 	return urllib.request.urlopen(r)
 
@@ -101,7 +102,7 @@ class WebBackend():
 		if filename is None:
 			filename = self._filename(extension)
 		else:
-			assert(extension is None)
+			assert extension is None
 
 		filepath = self._filepath(filename)
 		with open(self.webpath + "/" + filepath, "wb") as f:
@@ -116,7 +117,7 @@ class WebpConverter():
 	def check():
 		try:
 			subprocess.check_call(["dwebp", "-version"], stdout=subprocess.DEVNULL)
-		except:
+		except Exception:
 			logging.error("The WebP command line tools need to be installed to use this feature (try: apt install webp)")
 			os._exit(1)
 	@staticmethod

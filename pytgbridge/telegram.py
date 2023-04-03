@@ -153,10 +153,11 @@ class TelegramClient():
 		self.event_handlers[name] = func
 
 
-	def _invoke_event_handler(self, name, args=(), kwargs={}):
+	def _invoke_event_handler(self, name, args=(), kwargs=None):
 		if name not in self.event_handlers.keys():
 			logging.warning("Unhandeled '%s' event", name)
 			return
+		kwargs = kwargs or {}
 		try:
 			self.event_handlers[name](*args, **kwargs)
 		except Exception as e:
@@ -194,8 +195,6 @@ class TelegramClient():
 		self._invoke_event_handler("cmd_me", (message, ))
 
 	def on_media(self, message):
-		# TODO: remove when pyTelegramBotAPI supports this:
-		setattr(message, "via_bot", telebot.types.User.de_json(message.json.get("via_bot")))
 		self._invoke_event_handler("media", (message, TelegramMediaContainer(message)))
 
 	def on_new_chat_photo(self, message):
@@ -207,7 +206,7 @@ class TelegramClient():
 		self.bot.send_message(chat_id, text, **kwargs)
 
 	def send_reply_message(self, event, text, **kwargs):
-		self.bot.send_message(event.chat.id, text, reply_to_message_id=event.message_id)
+		self.bot.send_message(event.chat.id, text, reply_to_message_id=event.message_id, **kwargs)
 
 	def get_file_url(self, file_id, allowed_failure=False):
 		try:

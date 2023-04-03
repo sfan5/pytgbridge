@@ -10,7 +10,7 @@ description = "Telegram/IRC bridge"
 readme = "README.md"
 requires-python = ">=3.6"
 dependencies = [
-	"pyTelegramBotAPI>=3.7.4",
+	"pyTelegramBotAPI>=3.8.0",
 	"irc>=15.0.5",
 	"json5>=0.6",
 ]
