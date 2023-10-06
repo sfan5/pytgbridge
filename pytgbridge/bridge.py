@@ -201,6 +201,7 @@ class Bridge():
 		self.conf = namedtuple("Conf", config_names)(**options)
 		if self.conf.convert_webp_stickers:
 			WebpConverter.check()
+		self.tg_ignore_users = set(config.get("telegram_ignore_users", []))
 		#
 		self.nc = NickColorizer(self.conf.irc_nick_colors)
 		self.tf = namedtuple("T", ["irc", "tg"])(
@@ -250,6 +251,8 @@ class Bridge():
 			l = self._find_link(tg=event)
 			if l is None:
 				logging.warning("Telegram chat %d is not linked to anywhere", event.chat.id)
+				return
+			if event.from_user.id in self.tg_ignore_users:
 				return
 			func(l, event, *args)
 		self.tg.event_handler(event, wrap)
