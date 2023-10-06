@@ -11,6 +11,8 @@ mapped_content_type = {
 	"poll": "poll",
 	"new_chat_members": "users_joined",
 	"left_chat_member": "user_left",
+	# TODO https://core.telegram.org/bots/api#chatmemberleft
+	# TODO also Voice Chat Info
 	"new_chat_title": "ctitle_changed",
 	"delete_chat_photo": "cphoto_deleted",
 	"group_chat_created": "", # can't occur because we're a bot
