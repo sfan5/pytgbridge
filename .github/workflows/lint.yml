@@ -1,0 +1,29 @@
+name: lint
+
+on:
+  push:
+    paths:
+      - '.github/workflows/*.yml'
+      - '**.py'
+      - 'pyproject.toml'
+  pull_request:
+    paths:
+      - '.github/workflows/*.yml'
+      - '**.py'
+      - 'pyproject.toml'
+
+jobs:
+
+  pylint:
+    runs-on: ubuntu-latest
+    container:
+      image: python:3.11-slim
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install deps
+        run: |
+          pip install -e .
+          pip install pylint
+      - name: Lint
+        run: |
+          pylint -E --fail-on=E pytgbridge
