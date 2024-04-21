@@ -2,6 +2,7 @@ import irc.connection
 import irc.bot
 import socket
 import logging
+import time
 from jaraco.stream import buffer
 
 MESSAGE_SPLIT_LEN = 420
@@ -65,6 +66,7 @@ class IRCBot(irc.bot.SingleServerIRCBot):
 
 	def on_disconnect(self, conn, event):
 		logging.warning("IRC connection error, reconnecting")
+		time.sleep(5)
 		self.jump_server()
 
 class IRCClient():
