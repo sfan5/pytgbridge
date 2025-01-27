@@ -69,13 +69,20 @@ class IRCBot(irc.bot.SingleServerIRCBot):
 		time.sleep(5)
 		self.jump_server()
 
+def _wrap_ssl(sock):
+	import ssl
+	context = ssl.create_default_context()
+	context.check_hostname = False
+	context.verify_mode = ssl.CERT_NONE
+	return context.wrap_socket(sock)
+
 class IRCClient():
 	def __init__(self, config):
 		# Read config
 		args = {}
-		args["ipv6"] = True if "ipv6" not in config.keys() else config["ipv6"]
+		args["ipv6"] = config.get("ipv6", True)
 		if config["ssl"]:
-			args["wrapper"] = __import__("ssl").wrap_socket
+			args["wrapper"] = _wrap_ssl
 		# Resolve host
 		family = 0 if args["ipv6"] else socket.AF_INET
 		try:
